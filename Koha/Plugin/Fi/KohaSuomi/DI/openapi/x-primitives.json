@@ -1,0 +1,16 @@
+{
+    "biblio_id": {
+      "type": "integer",
+      "description": "Internal biblio identifier"
+    },
+    "patron_id": {
+      "type": "integer",
+      "description": "Internal patron identifier"
+    },
+    "library_id": {
+        "type": "string",
+        "description": "internally assigned library identifier",
+        "maxLength": 10,
+        "minLength": 1
+    }
+}  
