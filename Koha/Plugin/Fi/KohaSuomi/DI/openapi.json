@@ -114,7 +114,8 @@
       },
       "x-koha-authorization": {
         "permissions": {
-          "catalogue": "1"
+          "borrowers": "1",
+          "circulate": "circulate_remaining_permissions"
         }
       }
     }
@@ -208,6 +209,11 @@
             "$ref": "openapi/definitions.json#/error"
           }
         }
+      },
+      "x-koha-authorization": {
+        "permissions": {
+          "catalogue": "1"
+        }
       }
     }
   },
@@ -288,6 +294,11 @@
             "$ref": "openapi/definitions.json#/error"
           }
         }
+      },
+      "x-koha-authorization": {
+        "permissions": {
+          "catalogue": "1"
+        }
       }
     }
   },
@@ -326,6 +337,11 @@
           "schema": {
             "$ref": "openapi/definitions.json#/error"
           }
+        }
+      },
+      "x-koha-authorization": {
+        "permissions": {
+          "catalogue": "1"
         }
       }
     }
@@ -379,6 +395,11 @@
           "schema": {
             "$ref": "openapi/definitions.json#/error"
           }
+        }
+      },
+      "x-koha-authorization": {
+        "permissions": {
+          "catalogue": "1"
         }
       }
     }
@@ -439,6 +460,11 @@
             "$ref": "openapi/definitions.json#/error"
           }
         }
+      }
+    },
+    "x-koha-authorization": {
+      "permissions": {
+        "catalogue": "1"
       }
     }
   }
