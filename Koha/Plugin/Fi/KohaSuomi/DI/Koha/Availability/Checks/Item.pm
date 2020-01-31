@@ -74,7 +74,7 @@ sub checked_out {
     if ($issue) {
         return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::CheckedOut->new(
             borrowernumber => 0+$issue->{borrowernumber},
-            date_due => $issue->{date_due}->strftime('%F %T'),
+            due_date => $issue->{date_due}->strftime('%F %T'),
         );
     }
     return;

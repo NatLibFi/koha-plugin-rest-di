@@ -19,7 +19,7 @@ use Exception::Class (
      'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::CheckedOut' => {
         isa =>  'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item',
         description => "Item has already been checked out.",
-        fields => ["borrowernumber", "date_due"],
+        fields => ["borrowernumber", "due_date"],
     },
      'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::Damaged' => {
         isa =>  'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item',

@@ -177,7 +177,7 @@
       "description": "Item is checked out to a patron.",
       "type": "object",
       "properties": {
-        "date_due": {
+        "due_date": {
           "type": ["string", "null"],
           "format": "date-time"
         }
