@@ -5,6 +5,7 @@ then
   if echo $TRAVIS_BRANCH | grep master
   then
     echo "Building release"
+    npm install gulp
     node increment_version.js
     git commit -a -m "Version auto-incremented  - $TRAVIS_JOB_NUMBER [ci skip]"
     gulp build
