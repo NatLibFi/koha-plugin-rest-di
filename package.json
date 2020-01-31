@@ -1,6 +1,6 @@
 {
   "name": "koha-plugin-rest-di",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "previous_version": "0.1.0",
   "description": "Koha REST API plugin for addition functionality for discovery interfaces",
   "devDependencies": {
