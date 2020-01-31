@@ -23,6 +23,8 @@ use C4::Auth qw( haspermission );
 
 use Koha::Biblios;
 
+use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability;
+use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::Patron;
 
 =head1 Koha::Plugin::Fi::KohaSuomi::DI::PatronController
 
@@ -30,9 +32,51 @@ A class implementing the controller methods for the patron-related API
 
 =head2 Class Methods
 
-=head3 
+=head3 get_status
+
+Get borrower's status
 
 =cut
+
+sub get_status {
+    my $c = shift->openapi->valid_input or return;
+
+    return try {
+        my $patron = Koha::Patrons->find($c->validation->param('patron_id'));
+        unless ($patron) {
+            return $c->render(
+                status  => 404,
+                openapi => {error => 'Patron not found'}
+            );
+        }
+
+        my $ret = $patron->to_api;
+        
+        my $patron_checks = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::Patron->new($patron);
+
+        my %blocks;
+        my $ex;
+        $blocks{ref($ex)} = $ex if $ex = $patron_checks->debarred;
+        $blocks{ref($ex)} = $ex if $ex = $patron_checks->debt_hold;
+        $blocks{ref($ex)} = $ex if $ex = $patron_checks->debt_checkout_guarantees;
+        $blocks{ref($ex)} = $ex if $ex = $patron_checks->exceeded_maxreserves;
+        $blocks{ref($ex)} = $ex if $ex = $patron_checks->expired;
+        $blocks{ref($ex)} = $ex if $ex = $patron_checks->gonenoaddress;
+        $blocks{ref($ex)} = $ex if $ex = $patron_checks->lost;
+
+        $ret->{blocks} = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability->to_api_exception(\%blocks);
+
+        return $c->render(status => 200, openapi => $ret);
+    } catch {
+        if ( $_->isa('DBIx::Class::Exception') ) {
+            return $c->render(status => 500, openapi => { error => $_->msg });
+        }
+        else {
+            return $c->render( status => 500, openapi =>
+                { error => "Something went wrong, check the logs." });
+        }
+    };
+}
 
 =head3 list_checkouts
 
@@ -64,13 +108,13 @@ sub list_checkouts {
                 'item.itype', 'item.homebranch', 'item.holdingbranch', 'item.ccode', 'item.permanent_location',
                 'item.enumchron', 'item.biblionumber',
                 'biblioitem.itemtype',
-                'biblio.title'
+                'biblio.title', 'biblio.subtitle', 'biblio.part_number', 'biblio.part_name', 'biblio.unititle'
             ],
             '+as' => [
                 'item_itype', 'homebranch', 'holdingbranch', 'ccode', 'permanent_location', 
                 'enumchron', 'biblionumber',
                 'biblio_itype',
-                'title'
+                'title', 'subtitle', 'part_number', 'part_name', 'uniform_title'
             ]
         };
 
@@ -168,6 +212,8 @@ sub list_checkouts {
             }
 
             my $result = $checkout->to_api;
+            $result->{'biblio_id'} = $result->{'biblionumber'};
+            delete $result->{'biblionumber'};
 
             $result->{'max_renewals'} = $max_renewals;
             if (!$blocks) {

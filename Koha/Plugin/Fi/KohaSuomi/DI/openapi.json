@@ -1,125 +1,4 @@
 {
-  "/patrons/{patron_id}/checkouts": {
-    "get": {
-      "x-mojo-to": "Fi::KohaSuomi::DI::PatronController#list_checkouts",
-      "operationId": "listCheckoutsWithRenewabilityDI",
-      "tags": ["patrons", "checkouts"],
-      "parameters": [{
-        "$ref": "openapi/parameters.json#/patron_id_pp"
-      }, {
-        "$ref": "openapi/parameters.json#/page"
-      }, {
-        "$ref": "openapi/parameters.json#/per_page"
-      }, {
-        "$ref": "openapi/parameters.json#/match"
-      }, {
-        "$ref": "openapi/parameters.json#/order_by"
-      },{
-        "name": "checked_in",
-        "in": "query",
-        "description": "By default, current checkouts are returned, when this is true then checked in checkouts are returned as result.",
-        "type": "boolean"
-      }],
-      "produces": [
-        "application/json"
-      ],
-      "responses": {
-        "200": {
-          "description": "A list of checkouts"
-        },
-        "403": {
-          "description": "Access forbidden",
-          "schema": { "$ref": "openapi/definitions.json#/error" }
-        },
-        "404": {
-          "description": "Patron not found",
-          "schema": { "$ref": "openapi/definitions.json#/error" }
-        }
-      },
-      "x-koha-authorization": {
-        "permissions": {
-          "circulate": "circulate_remaining_permissions"
-        }
-      }
-    }
-  },
-  "/patrons/validation": {
-    "post": {
-      "x-mojo-to": "Fi::KohaSuomi::DI::PatronController#validate_credentials",
-      "operationId": "validatePatronCredentialsDI",
-      "tags": ["patrons"],
-      "parameters": [
-        {
-          "in": "body",
-          "name": "body",
-          "description": "A password validation request",
-          "schema": {
-            "type": "object",
-            "properties": {
-              "cardnumber": {
-                "description": "Card number for the patron",
-                "type": "string"
-              },
-              "userid": {
-                "description": "User login ID for the patron",
-                "type": "string"
-              },
-              "password": {
-                "description": "Password for the patron",
-                "type": "string"
-              }
-            }
-          }
-        }
-      ],
-      "consumes": ["application/json"],
-      "produces": ["application/json"],
-      "responses": {
-        "200": {
-          "description": "Patron information upon successful validation",
-          "schema": {
-            "type": "object"
-          }
-        },
-        "400": {
-          "description": "Bad parameters",
-          "schema": {
-            "$ref": "openapi/definitions.json#/error"
-          }
-        },
-        "401": {
-          "description": "Bad username/cardnumber and/or password",
-          "schema": {
-            "$ref": "openapi/definitions.json#/error"
-          }
-        },
-        "403": {
-          "description": "Access forbidden",
-          "schema": {
-            "$ref": "openapi/definitions.json#/error"
-          }
-        },
-        "500": {
-          "description": "Internal error",
-          "schema": {
-            "$ref": "openapi/definitions.json#/error"
-          }
-        },
-        "503": {
-          "description": "Under maintenance",
-          "schema": {
-            "$ref": "openapi/definitions.json#/error"
-          }
-        }
-      },
-      "x-koha-authorization": {
-        "permissions": {
-          "borrowers": "1",
-          "circulate": "circulate_remaining_permissions"
-        }
-      }
-    }
-  },
   "/availability/biblios/{biblio_id}/articlerequest": {
     "get": {
       "x-mojo-to": "Fi::KohaSuomi::DI::AvailabilityController#biblio_article_request",
@@ -465,6 +344,181 @@
     "x-koha-authorization": {
       "permissions": {
         "catalogue": "1"
+      }
+    }
+  },
+
+  "/patrons/{patron_id}/checkouts": {
+    "get": {
+      "x-mojo-to": "Fi::KohaSuomi::DI::PatronController#list_checkouts",
+      "operationId": "listCheckoutsWithRenewabilityDI",
+      "tags": ["patrons", "checkouts"],
+      "parameters": [{
+        "$ref": "openapi/parameters.json#/patron_id_pp"
+      }, {
+        "$ref": "openapi/parameters.json#/page"
+      }, {
+        "$ref": "openapi/parameters.json#/per_page"
+      }, {
+        "$ref": "openapi/parameters.json#/match"
+      }, {
+        "$ref": "openapi/parameters.json#/order_by"
+      },{
+        "name": "checked_in",
+        "in": "query",
+        "description": "By default, current checkouts are returned, when this is true then checked in checkouts are returned as result.",
+        "type": "boolean"
+      }],
+      "produces": [
+        "application/json"
+      ],
+      "responses": {
+        "200": {
+          "description": "A list of checkouts"
+        },
+        "403": {
+          "description": "Access forbidden",
+          "schema": { "$ref": "openapi/definitions.json#/error" }
+        },
+        "404": {
+          "description": "Patron not found",
+          "schema": { "$ref": "openapi/definitions.json#/error" }
+        }
+      },
+      "x-koha-authorization": {
+        "permissions": {
+          "circulate": "circulate_remaining_permissions"
+        }
+      }
+    }
+  },
+  "/patrons/{patron_id}/status": {
+    "get": {
+      "x-mojo-to": "Fi::KohaSuomi::DI::PatronController#get_status",
+      "operationId": "getstatusPatronDI",
+      "tags": ["patrons"],
+      "parameters": [{
+        "$ref": "openapi/parameters.json#/patron_id_pp"
+      }
+      ],
+      "produces": [
+          "application/json"
+      ],
+      "responses": {
+        "200": {
+          "description": "Patron with status information"
+        },
+        "401": {
+          "description": "Authentication required",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "403": {
+          "description": "Access forbidden",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "404": {
+          "description": "Patron not found",
+          "schema": {
+           "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "500": {
+          "description": "Internal server error",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "503": {
+          "description": "Under maintenance",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        }
+      },
+      "x-koha-authorization": {
+        "permissions": {
+          "borrowers": "1"
+        }
+      }
+    }
+  },
+  "/patrons/validation": {
+    "post": {
+      "x-mojo-to": "Fi::KohaSuomi::DI::PatronController#validate_credentials",
+      "operationId": "validatePatronCredentialsDI",
+      "tags": ["patrons"],
+      "parameters": [
+        {
+          "in": "body",
+          "name": "body",
+          "description": "A password validation request",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "cardnumber": {
+                "description": "Card number for the patron",
+                "type": "string"
+              },
+              "userid": {
+                "description": "User login ID for the patron",
+                "type": "string"
+              },
+              "password": {
+                "description": "Password for the patron",
+                "type": "string"
+              }
+            }
+          }
+        }
+      ],
+      "consumes": ["application/json"],
+      "produces": ["application/json"],
+      "responses": {
+        "200": {
+          "description": "Patron information upon successful validation",
+          "schema": {
+            "type": "object"
+          }
+        },
+        "400": {
+          "description": "Bad parameters",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "401": {
+          "description": "Bad username/cardnumber and/or password",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "403": {
+          "description": "Access forbidden",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "500": {
+          "description": "Internal error",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "503": {
+          "description": "Under maintenance",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        }
+      },
+      "x-koha-authorization": {
+        "permissions": {
+          "borrowers": "1"
+        }
       }
     }
   }
