@@ -1,4 +1,7 @@
 {
+  "article_request_id_pp": {
+    "$ref": "parameters/articlerequest.json#/article_request_id_pp"
+  },
   "biblio_id_pp": {
     "$ref": "parameters/biblio.json#/biblio_id_pp"
   },
