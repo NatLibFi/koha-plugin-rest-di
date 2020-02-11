@@ -26,7 +26,7 @@ use Koha::Items;
 use Koha::Patrons;
 
 use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::Biblioitem;
-use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::IssuingRule;
+use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::CirculationRule;
 use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::Item;
 use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::Patron;
 
@@ -184,7 +184,7 @@ sub common_issuing_rule_checks {
         use_cache => $params->{'use_cache'},
     };
     $args->{patron} = $patron if $patron;
-    my $rulecalc = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::IssuingRule->new($args);
+    my $rulecalc = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::CirculationRule->new($args);
 
     if ($reason = $rulecalc->no_article_requests_allowed) {
         $self->unavailable($reason);
@@ -287,7 +287,7 @@ sub opac_specific_issuing_rule_checks {
         branchcode => $branchcode,
     };
     $args->{patron} = $patron if $patron;
-    my $rulecalc = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::IssuingRule->new($args);
+    my $rulecalc = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::CirculationRule->new($args);
     if ($reason = $rulecalc->opac_item_level_article_request_forbidden) {
         $self->unavailable($reason);
     }

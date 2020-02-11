@@ -137,7 +137,7 @@ sub common_biblio_checks {
         use_cache => $params->{'use_cache'},
     };
     $args->{patron} = $patron if $patron;
-    my $rulecalc = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::IssuingRule->new($args);
+    my $rulecalc = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::CirculationRule->new($args);
 
     if (my $reason = $rulecalc->opac_bib_level_article_request_forbidden) {
         $self->unavailable($reason);

@@ -31,7 +31,7 @@ use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::Biblio;
 use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::Biblioitem;
 use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::Checkout;
 use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::Item;
-use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::IssuingRule;
+use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::CirculationRule;
 use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::Patron;
 
 use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Hold;
@@ -126,7 +126,7 @@ sub in_intranet {
         }
     }
 
-    my $checkoutrulecalc = Koha::Availability::Checks::IssuingRule->new({
+    my $checkoutrulecalc = Koha::Availability::Checks::CirculationRule->new({
         item => $item,
         patron => $patron,
         branchcode => $branchcode,

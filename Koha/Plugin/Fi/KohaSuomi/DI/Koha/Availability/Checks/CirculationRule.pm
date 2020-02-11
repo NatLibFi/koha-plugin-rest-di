@@ -1,4 +1,4 @@
-package Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::IssuingRule;
+package Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::CirculationRule;
 
 # Copyright 2016 Koha-Suomi Oy
 # Copyright 2019 University of Helsinki (The National Library Of Finland)
@@ -26,7 +26,7 @@ use C4::Circulation;
 use C4::Context;
 use C4::Reserves;
 
-use Koha::IssuingRules;
+use Koha::CirculationRules;
 use Koha::Items;
 use Koha::Logger;
 
@@ -52,15 +52,10 @@ OPTIONAL PARAMETERS:
 * biblioitem        Attempts to match issuing rule with itemtype from given
                     biblioitem as a fallback
 
-Stores the effective issuing rule into class variable effective_issuing_rule
-for reusability. This means the methods in this class are performed on the
-stored effective issuing rule and multiple queries into issuingrules table
-are avoided.
-
-Caches issuing rule momentarily to help performance in biblio availability
+Caches circultion rules momentarily to help performance in biblio availability
 calculation. This is helpful because a biblio may have multiple items matching
-the same issuing rule and this lets us avoid multiple, unneccessary queries into
-the issuingrule table.
+the same circulation rule and this lets us avoid multiple, unneccessary queries into
+the database.
 
 =cut
 
@@ -70,84 +65,37 @@ sub new {
 
     my $self = $class->SUPER::new(@_);
 
-    my $categorycode  = $params->{'categorycode'};
-    my $rule_itemtype = $params->{'rule_itemtype'};
-    my $branchcode    = $params->{'branchcode'};
-    my $ccode         = $params->{'ccode'};
-    my $permanent_location = $params->{'permanent_location'};
+    my $patron     = $self->_validate_parameter($params, 'patron', 'Koha::Patron');
+    my $item       = $self->_validate_parameter($params, 'item', 'Koha::Item');
+    my $biblioitem = $self->_validate_parameter($params, 'biblioitem', 'Koha::Biblioitem');
 
-    my $patron     = $self->_validate_parameter($params,
-                        'patron',     'Koha::Patron');
-    my $item       = $self->_validate_parameter($params,
-                        'item',       'Koha::Item');
-    my $biblioitem = $self->_validate_parameter($params,
-                        'biblioitem', 'Koha::Biblioitem');
-
-    unless ($rule_itemtype) {
-        $rule_itemtype = $item
+    unless ($params->{'rule_itemtype'}) {
+        $params->{'rule_itemtype'} = $item
             ? $item->effective_itemtype
             : $biblioitem
               ? $biblioitem->itemtype
               : undef;
     }
-    unless ($categorycode) {
-        $categorycode = $patron ? $patron->categorycode : undef;
+    unless ($params->{'categorycode'}) {
+        $params->{'categorycode'} = $patron ? $patron->categorycode : undef;
     }
-    unless ($ccode) {
-        $ccode = $item ? $item->ccode : undef;
+    unless ($params->{'ccode'}) {
+        $params->{'ccode'} = $item ? $item->ccode : undef;
     }
-    unless ($permanent_location) {
-        $permanent_location = $item ? $item->permanent_location : undef;
-    }
-
-    if ($params->{'use_cache'}) {
-        $self->{'use_cache'} = 1;
-    } else {
-        $self->{'use_cache'} = 0;
+    unless ($params->{'permanent_location'}) {
+        $params->{'permanent_location'} = $item ? $item->permanent_location : undef;
     }
 
-    # Get a matching issuing rule
-    my $rule;
-    my $cache;
-    my $cache_key = 'issuingrule-.'
-        .($categorycode?$categorycode:'*').'-'
-        .($rule_itemtype?$rule_itemtype:'*').'-'
-        .($branchcode?$branchcode:'*')
-        .($ccode?$ccode:'*').'-'
-        .($permanent_location?$permanent_location:'*');
-    if ($self->use_cache) {
-        $cache = Koha::Caches->get_instance('availability');
-        my $cached = $cache->get_from_cache($cache_key);
-        if ($cached) {
-            $rule = Koha::IssuingRule->new->set($cached);
-        }
-    }
+    $self->{'use_cache'} = $params->{'use_cache'} // 1;
 
-    unless ($rule) {
-        $rule = Koha::IssuingRules->get_effective_issuing_rule({
-            categorycode => $categorycode,
-            itemtype     => $rule_itemtype,
-            branchcode   => $branchcode,
-            ccode        => $ccode,
-            permanent_location => $permanent_location,
-        });
-        if ($rule && $self->use_cache) {
-            $cache->set_in_cache($cache_key, $rule->unblessed, { expiry => 10 });
-        }
-    }
+    delete($params->{'patron'});
+    delete($params->{'item'});
+    delete($params->{'biblioitem'});
+    delete($params->{'use_cache'});
 
-    my $logger = Koha::Logger->get;
-    $logger->debug('Issuing Rule: ' . Data::Dumper::Dumper($rule->unblessed))
-        if $rule;
-
-    # Store effective issuing rule into object
-    $self->{'effective_issuing_rule'} = $rule;
-    # Store patron into object
     $self->{'patron'} = $patron;
-    # Store item into object
     $self->{'item'} = $item;
-    # Store branchcode into object
-    $self->{'branchcode'} = $branchcode;
+    $self->{'rule_params'} = $params;
 
     bless $self, $class;
 }
@@ -203,12 +151,13 @@ biblionumber        Allows you to specify biblionumber; if not given, item's
 sub maximum_holds_for_record_reached {
     my ($self, $params) = @_;
 
-    return unless my $rule = $self->effective_issuing_rule;
+    return unless my $reserves_rule = $self->_get_rule('reservesallowed');
+    return unless my $per_record_rule = $self->_get_rule('holds_per_record');
     return unless my $item = $self->item;
 
     my $biblionumber = $params->{'biblionumber'} ? $params->{'biblionumber'}
                 : $item->biblionumber;
-    if ($rule->holds_per_record > 0 && $rule->reservesallowed > 0) {
+    if ($per_record_rule->rule_value > 0 && $reserves_rule->rule_value > 0) {
         my $holds_on_this_record;
         unless (exists $params->{'nonfound_holds'}) {
             $holds_on_this_record = Koha::Holds->search({
@@ -219,9 +168,9 @@ sub maximum_holds_for_record_reached {
         } else {
             $holds_on_this_record = @{$params->{'nonfound_holds'}};
         }
-        if ($holds_on_this_record >= $rule->holds_per_record) {
+        if ($holds_on_this_record >= $per_record_rule->rule_value) {
             return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Hold::MaximumHoldsForRecordReached->new(
-                max_holds_allowed => 0+$rule->holds_per_record,
+                max_holds_allowed => 0+$per_record_rule->rule_value,
                 current_hold_count => 0+$holds_on_this_record,
             );
         }
@@ -243,15 +192,16 @@ Returns Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Hold::ZeroHoldsAllowe
 sub maximum_holds_reached {
     my ($self) = @_;
 
-    return unless my $rule = $self->effective_issuing_rule;
-    my $rule_itemtype = $rule->itemtype;
+    return unless my $reserves_rule = $self->_get_rule('reservesallowed');
+    return unless my $per_record_rule = $self->_get_rule('holds_per_record');
+    my $rule_itemtype = $self->{'rule_params'}->{'rule_itemtype'};
     my $controlbranch = C4::Context->preference('ReservesControlBranch');
-    if ($rule->holds_per_record > 0 && $rule->reservesallowed > 0) {
+    if ($per_record_rule->rule_value > 0 && $reserves_rule->rule_value > 0) {
         # Get patron's hold count for holds that match the found issuing rule
         my $hold_count = $self->_patron_hold_count($rule_itemtype, $controlbranch);
-        if ($hold_count >= $rule->reservesallowed) {
+        if ($hold_count >= $reserves_rule->rule_value) {
             return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Hold::MaximumHoldsReached->new(
-                max_holds_allowed => 0+$rule->reservesallowed,
+                max_holds_allowed => 0+$reserves_rule->rule_value,
                 current_hold_count => 0+$hold_count,
             );
         }
@@ -271,9 +221,9 @@ restricts on-shelf holds.
 sub on_shelf_holds_forbidden {
     my ($self) = @_;
 
-    return unless my $rule = $self->effective_issuing_rule;
+    return unless my $rule = $self->_get_rule('onshelfholds');
     return unless my $item = $self->item;
-    my $on_shelf_holds = $rule->onshelfholds;
+    my $on_shelf_holds = $rule->rule_value;
 
     if ($on_shelf_holds == 0) {
         my $hold_waiting = Koha::Holds->search({
@@ -322,8 +272,9 @@ forbidden in OPAC.
 sub opac_item_level_hold_forbidden {
     my ($self) = @_;
 
-    return unless my $rule = $self->effective_issuing_rule;
-    if (defined $rule->opacitemholds && $rule->opacitemholds eq 'N') {
+    return unless my $rule = $self->_get_rule('opacitemholds');
+
+    if ($rule->rule_value ne '' && $rule->rule_value eq 'N') {
         return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Hold::ItemLevelHoldNotAllowed->new;
     }
     return;
@@ -339,8 +290,9 @@ allowed at all.
 sub zero_checkouts_allowed {
     my ($self) = @_;
 
-    return unless my $rule = $self->effective_issuing_rule;
-    if (defined $rule->maxissueqty && $rule->maxissueqty == 0) {
+    return unless my $rule = $self->_get_rule('maxissueqty');
+
+    if ($rule->rule_value ne '' && $rule->rule_value == 0) {
         return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Checkout::ZeroCheckoutsAllowed->new;
     }
     return;
@@ -359,9 +311,12 @@ issuing rule.
 sub zero_holds_allowed {
     my ($self) = @_;
 
-    return unless my $rule = $self->effective_issuing_rule;
-    if (defined $rule->reservesallowed && $rule->reservesallowed == 0
-        || defined $rule->holds_per_record && $rule->holds_per_record == 0) {
+    return unless my $reserves_rule = $self->_get_rule('reservesallowed');
+    return unless my $per_record_rule = $self->_get_rule('holds_per_record');
+
+    if (($reserves_rule->rule_value ne '' && $reserves_rule->rule_value == 0)
+        || ($per_record_rule->rule_value ne '' && $per_record_rule->rule_value == 0)
+    ) {
         return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Hold::ZeroHoldsAllowed->new;
     }
     return;
@@ -377,9 +332,9 @@ allowed at all.
 sub no_article_requests_allowed {
     my ($self) = @_;
 
-    return unless my $rule = $self->effective_issuing_rule;
+    return unless my $rule = $self->_get_rule('article_requests');
 
-    if ($rule->article_requests eq 'no') {
+    if ($rule->rule_value eq 'no') {
         return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::ArticleRequest::NotAllowed->new;
     }
 
@@ -396,8 +351,9 @@ forbidden in OPAC.
 sub opac_bib_level_article_request_forbidden {
     my ($self) = @_;
 
-    return unless my $rule = $self->effective_issuing_rule;
-    if ($rule->article_requests ne 'yes' && $rule->article_requests ne 'bib_only') {
+    return unless my $rule = $self->_get_rule('article_requests');
+
+    if ($rule->rule_value ne 'yes' && $rule->rule_value ne 'bib_only') {
         return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::ArticleRequest::BibLevelRequestNotAllowed->new;
     }
     return;
@@ -414,8 +370,9 @@ forbidden in OPAC.
 sub opac_item_level_article_request_forbidden {
     my ($self) = @_;
 
-    return unless my $rule = $self->effective_issuing_rule;
-    if ($rule->article_requests ne 'yes' && $rule->article_requests ne 'item_only') {
+    return unless my $rule = $self->_get_rule('article_requests');
+
+    if ($rule->rule_value ne 'yes' && $rule->rule_value ne 'item_only') {
         return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::ArticleRequest::ItemLevelRequestNotAllowed->new;
     }
 
@@ -457,7 +414,7 @@ sub _patron_hold_count {
         '-and' => [
             '-or' => [
                 $itemtype ne '*' && C4::Context->preference('item-level_itypes') == 1 ? [
-                    { 'item.itype' => $itemtype },
+                    { 'itype' => $itemtype },
                     { 'biblioitems.itemtype' => $itemtype }
                 ] : [ { 'biblioitems.itemtype' => $itemtype } ]
             ]
@@ -498,9 +455,39 @@ sub _holds_allowed {
     };
     $args->{patron} = $self->patron if $self->patron;
 
-    my $holdrulecalc = Koha::Availability::Checks::IssuingRule->new($args);
+    my $holdrulecalc = Koha::Availability::Checks::CirculationRule->new($args);
 
     return !$holdrulecalc->zero_holds_allowed;
+}
+
+sub _get_rule {
+    my ($self, $rule_name) = @_;
+
+    # Get a matching circulation rule
+    my $rule_params = $self->{'rule_params'};
+    $rule_params->{'rule_name'} = $rule_name;
+    my $rule;
+    my $cache;
+    my $cache_key = 'circ_rule';
+    for my $key (keys %$rule_params) {
+        $cache_key .= '-' . ($rule_params->{$key} ? $rule_params->{$key} : '*');
+    }
+    if ($self->{'use_cache'}) {
+        $cache = Koha::Caches->get_instance('availability');
+        my $cached = $cache->get_from_cache($cache_key);
+        if ($cached) {
+            $rule = Koha::CirculationRule->new->set($cached);
+        }
+    }
+
+    unless ($rule) {
+        $rule = Koha::CirculationRules->get_effective_rule($rule_params);
+        if ($rule && $self->{'use_cache'}) {
+            $cache->set_in_cache($cache_key, $rule->unblessed, { expiry => 10 });
+        }
+    }
+
+    return $rule;
 }
 
 1;

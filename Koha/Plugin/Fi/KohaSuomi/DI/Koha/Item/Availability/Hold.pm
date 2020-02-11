@@ -27,7 +27,7 @@ use Koha::Patrons;
 
 use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::Biblio;
 use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::Biblioitem;
-use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::IssuingRule;
+use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::CirculationRule;
 use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::Item;
 use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::LibraryItemRule;
 use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::Patron;
@@ -219,7 +219,7 @@ sub common_issuing_rule_checks {
         use_cache => $params->{'use_cache'},
     };
     $args->{patron} = $patron if $patron;
-    my $holdrulecalc = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::IssuingRule->new($args);
+    my $holdrulecalc = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::CirculationRule->new($args);
 
     if ($reason = $holdrulecalc->zero_holds_allowed) {
         $self->unavailable($reason);
@@ -349,7 +349,7 @@ sub opac_specific_issuing_rule_checks {
         branchcode => $branchcode,
     };
     $args->{patron} = $patron if $patron;
-    my $holdrulecalc = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::IssuingRule->new($args);
+    my $holdrulecalc = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::CirculationRule->new($args);
     if ($reason = $holdrulecalc->opac_item_level_hold_forbidden) {
         $self->unavailable($reason);
     }

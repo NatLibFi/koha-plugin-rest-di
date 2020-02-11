@@ -199,8 +199,9 @@ sub list_checkouts {
                 $can_renew = 0;
                 $blocks = $patron_blocks;
             } else {
-                my $issuing_rule = Koha::IssuingRules->get_effective_issuing_rule(
+                my $circ_rule = Koha::CirculationRules->get_effective_rule(
                     {   
+                        rule_name    => 'renewalsallowed',
                         categorycode => $patron->categorycode,
                         itemtype     => $itype,
                         branchcode   => $branchcode,
@@ -208,7 +209,7 @@ sub list_checkouts {
                         permanent_location => $checkout_ub->{'permanent_location'}
                     }
                 );
-                $max_renewals = $issuing_rule ? 0+$issuing_rule->renewalsallowed : 0;
+                $max_renewals = ($circ_rule && $circ_rule->rule_value ne '') ? 0+$circ_rule->rule_value : undef;
             }
 
             my $result = $checkout->to_api;
