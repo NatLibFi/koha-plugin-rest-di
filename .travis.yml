@@ -1,3 +1,5 @@
+os: linux
+language: perl
 install:
 - echo $TRAVIS_BRANCH
 - echo $TRAVIS_JOB_ID
