@@ -1,6 +1,6 @@
 os: linux
 language: perl
-install:
+script:
 - echo $TRAVIS_BRANCH
 - echo $TRAVIS_JOB_ID
 - echo $TRAVIS_JOB_NUMBER
