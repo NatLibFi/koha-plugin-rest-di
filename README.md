@@ -33,3 +33,12 @@ If you need to use the plugin without a KPZ package (e.g. to use a version clone
 1. As above, make sure the plugin system is configured and enabled.
 2. Create the path Koha/Plugin/Fi/KohaSuomi/ under the ` <pluginsdir>`
 3. Symlink the DI.pm file and DI directory to the Koha/Plugin/Fi/KohaSuomi/ directory.
+
+## Building a Release
+
+Travis will build the release provided the commit includes a suitable version tag:
+
+1. `git tag -a vX.Y.Z -m "Tag release X.Y.Z"`
+2. `git push --tags origin master`
+
+To manually build a release locally, run `./build.sh`.
