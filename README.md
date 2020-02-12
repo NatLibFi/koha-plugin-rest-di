@@ -38,7 +38,7 @@ If you need to use the plugin without a KPZ package (e.g. to use a version clone
 
 Travis will build the release provided the commit includes a suitable version tag:
 
-1. `git tag -a vX.Y.Z -m "Tag release X.Y.Z"`
+1. `git tag -a vX.Y.Z -m "Release X.Y.Z"` (Feel free to provide a longer message too, it's displayed on the Releases page)
 2. `git push --tags origin master`
 
 To manually build a release locally, run `./build.sh`.
