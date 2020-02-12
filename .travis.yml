@@ -1,16 +1,18 @@
-language: node_js
-node_js:
-  - "8"
-
 install:
-  - echo $TRAVIS_BRANCH
-  - echo $TRAVIS_JOB_ID
-  - echo $TRAVIS_JOB_NUMBER
-  - git log -1 --pretty=oneline
-
-before_script:
-  - npm install -g gulp-cli
-  - npm install jsonfile
-
-script:
-  - bash deploy.sh
+- echo $TRAVIS_BRANCH
+- echo $TRAVIS_JOB_ID
+- echo $TRAVIS_JOB_NUMBER
+- git log -1 --pretty=oneline
+before_deploy:
+- bash build.sh
+deploy:
+  provider: releases
+  api_key:
+    secure: hDzkKjljLVNo3S/hWS34v5CPjNqekxEWEu8YCypHXbM8m4gxhhc6M/g0Euzy2MEPoArfAo6CTTogqlOqhQqOi3J3dlPfweK2nTq4/6A8QwkcjOc+nAUM7GXt3k1Wy02H6K417pIdbDzGX+pyai7pTd7is0MjUJos+Gn9NxvOFxYlebXf8uW3yD1oQlasF4pisnDKX1w9Lj30g3KF/dWm13lyWKRo879Bn0TuOVKaZoAdQSLuGIZz1LNVc0BlFsz21+fwnbPm5FS3k5Bu8HgqLz2HbLtfOPw0JTueD54aC9joPW6tzWw42x3Z1wBo085e736urhV5I0nFy1wqTMXGRWEH99hPur5Oxdk+jY1KFKEg6xoYig3JTSfxS525FgZdvLy7fWClmA45mw00mImmI3/UJN3XomQbMIdpk4nMc3YXBhERLOJ5XKwqi/0JjKgMe+3mp7dbScZUJb2bo0TKkW51QrXdd0A2esDPCvPjTlb1Gec7SodQ9o9LovFLodSr4lM3STVKCy1YZWSpVsP8an/lPtjpeAKj/8mePNoFGNTaH4PCHzw37GYB27AZrCFVo1zQmPLXJ4FxYji/LUYdvdhGySZrYqq5CMhD6layB8pPae8G75jfZEymFGEswUbq7PZH4vG2pRROPDDcugIdFYXNJgpWFyw7uVupIhg1kA8=
+  file_glob: true
+  file: koha-plugin-rest-di*.kpz
+  skip_cleanup: true
+  on:
+    repo: NatLibFi/koha-plugin-rest-di
+    branch: master
+    tags: true
