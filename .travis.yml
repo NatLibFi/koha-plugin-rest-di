@@ -1,5 +1,5 @@
 os: linux
-language: perl
+language: ruby 
 script:
 - echo $TRAVIS_BRANCH
 - echo $TRAVIS_JOB_ID
