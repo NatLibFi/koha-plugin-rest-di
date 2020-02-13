@@ -62,16 +62,4 @@ sub in_opac {
     return $self;
 }
 
-sub in_intranet {
-    my ($self, $params) = @_;
-
-    # TODO:
-    # Do we want to show some additional information in intranet context?
-    # Perhaps make some additional checks, or override some unavailabilities
-    # found in OPAC.
-    #
-    # For now, just run the same checks as OPAC context.
-    return $self->in_opac($params);
-}
-
 1;

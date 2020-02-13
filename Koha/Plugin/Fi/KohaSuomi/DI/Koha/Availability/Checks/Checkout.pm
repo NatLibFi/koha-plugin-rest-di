@@ -39,55 +39,6 @@ sub new {
     bless $self, $class;
 }
 
-=head3 invalid_due_date
-
-Returns Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Checkout::InvalidDueDate if given due date is invalid.
-
-Returns Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Checkout::DueDateBeforeNow if given due date is in the
-past.
-
-=cut
-
-sub invalid_due_date {
-    my ($self, $item, $patron, $duedate) = @_;
-
-    if ($duedate && ref $duedate ne 'DateTime') {
-        eval { $duedate = dt_from_string($duedate); };
-        if ($@) {
-            return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Checkout::InvalidDueDate->new(
-                duedate => $duedate,
-            );
-        }
-    }
-
-    my $now = DateTime->now(time_zone => C4::Context->tz());
-    unless ($duedate) {
-        my $issuedate = $now->clone();
-
-        my $branch = C4::Circulation::_GetCircControlBranch($item, $patron);
-        $duedate = C4::Circulation::CalcDateDue
-        (
-            $issuedate, $item->effective_itemtype, $branch, $patron->unblessed,
-            undef, $item
-        );
-    }
-    if ($duedate) {
-        my $today = $now->clone->truncate(to => 'minute');
-        if (DateTime->compare($duedate,$today) == -1 ) {
-            # duedate cannot be before now
-            return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Checkout::DueDateBeforeNow->new(
-                duedate => $duedate->strftime('%F %T'),
-                now => $now->strftime('%F %T'),
-            );
-        }
-    } else {
-        return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Checkout::InvalidDueDate->new(
-                duedate => $duedate,
-        );
-    }
-    return;
-}
-
 =head3 no_more_renewals
 
 Returns Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Checkout::NoMoreRenewals if no more renewals are

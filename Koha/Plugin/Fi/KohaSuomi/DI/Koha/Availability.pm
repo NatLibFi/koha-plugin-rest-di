@@ -55,13 +55,13 @@ that contains parameters "current_outstanding" and "max_outstanding" which lets
 us pick up the information easily later on without making new queries.
 
 With such design, Koha::Availability will be used as a parent for different types
-of availabilities, like hold and checkout availability. This allows each type of
+of availabilities, like hold availability. This allows each type of
 availability to perform uniformly; the ways to find out availability will be the
 same and the problems with availability are represented the same way.
 
 Example of inheritance described above:
 
-       Koha::Availability::Hold          Koha::Availability::Checkout
+       Koha::Availability::Hold          Koha::Availability::Search
                   |                                   |
                    \_________________________________/
                                    |

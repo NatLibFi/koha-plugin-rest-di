@@ -26,6 +26,11 @@ use Exception::Class (
         description => "Biblio not found.",
         fields => ['biblionumber'],
     },
+    'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Biblio::PickupLocations' => {
+        isa => 'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Biblio',
+        description => "Items in this biblio can only be transferred to following libraries",
+        fields => ["to_libraries"],
+    },
 
 );
 

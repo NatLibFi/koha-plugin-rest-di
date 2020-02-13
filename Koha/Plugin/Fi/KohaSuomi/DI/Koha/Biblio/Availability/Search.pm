@@ -69,23 +69,10 @@ sub new {
     return $self;
 }
 
-sub in_intranet {
-    my ($self, $params) = @_;
-
-    $self->reset;
-
-    # Item looper
-    $self->_item_looper($params);
-
-    return $self;
-}
-
 sub in_opac {
     my ($self, $params) = @_;
 
     $self->reset;
-
-    $params->{'opac'} = 1;
 
     # Item looper
     $self->_item_looper($params);
@@ -111,11 +98,7 @@ sub _item_looper {
         return;
     }
 
-    my $opac = $params->{'opac'} ? 1:0;
-    my $hidelostitems = 0;
-    if (!$opac) {
-        $hidelostitems = C4::Context->preference('hidelostitems');
-    }
+    my $hidelostitems = C4::Context->preference('hidelostitems');
 
     # Stop calculating item availabilities after $limit available items are found.
     # E.g. parameter 'limit' with value 1 will find only one available item and
@@ -153,17 +136,14 @@ sub _item_looper {
             $params->{'ignore_holds'} = 1;
             $params->{'ignore_transfer'} = 1;
         }
-        if ($opac) {
-            $item_availability = $item_availability->in_opac($params);
-            my $unavails = $item_availability->unavailabilities;
-            # Hide item in OPAC context if system preference hidelostitems is
-            # enabled.
-            my $lost = exists $unavails->{'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::Lost'};
-            if ($hidelostitems && $lost) {
-                next;
-            }
-        } else {
-            $item_availability = $item_availability->in_intranet($params);
+
+        $item_availability = $item_availability->in_opac($params);
+        my $unavails = $item_availability->unavailabilities;
+        # Hide item in OPAC context if system preference hidelostitems is
+        # enabled.
+        my $lost = exists $unavails->{'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::Lost'};
+        if ($hidelostitems && $lost) {
+            next;
         }
         if ($item_availability->available) {
             push @{$self->{'item_availabilities'}}, $item_availability;

@@ -157,7 +157,9 @@ sub maximum_holds_for_record_reached {
 
     my $biblionumber = $params->{'biblionumber'} ? $params->{'biblionumber'}
                 : $item->biblionumber;
-    if ($per_record_rule->rule_value > 0 && $reserves_rule->rule_value > 0) {
+    if ($per_record_rule->rule_value ne '' && $per_record_rule->rule_value > 0 
+        && $reserves_rule->rule_value ne 'Unlimited' && $reserves_rule->rule_value > 0
+    ) {
         my $holds_on_this_record;
         unless (exists $params->{'nonfound_holds'}) {
             $holds_on_this_record = Koha::Holds->search({
@@ -175,7 +177,7 @@ sub maximum_holds_for_record_reached {
             );
         }
     } else {
-        return $self->zero_holds;
+        return $self->zero_holds_allowed;
     }
     return;
 }
@@ -196,17 +198,19 @@ sub maximum_holds_reached {
     return unless my $per_record_rule = $self->_get_rule('holds_per_record');
     my $rule_itemtype = $self->{'rule_params'}->{'rule_itemtype'};
     my $controlbranch = C4::Context->preference('ReservesControlBranch');
-    if ($per_record_rule->rule_value > 0 && $reserves_rule->rule_value > 0) {
+    if ($per_record_rule->rule_value ne '' && $per_record_rule->rule_value > 0
+        && $reserves_rule->rule_value ne '' && $reserves_rule->rule_value ne 'Unlimited' && $reserves_rule->rule_value > 0
+    ) {
         # Get patron's hold count for holds that match the found issuing rule
         my $hold_count = $self->_patron_hold_count($rule_itemtype, $controlbranch);
-        if ($hold_count >= $reserves_rule->rule_value) {
+        if ($reserves_rule->rule_value ne '' || $reserves_rule->rule_value ne 'Unlimited' || $hold_count >= $reserves_rule->rule_value) {
             return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Hold::MaximumHoldsReached->new(
                 max_holds_allowed => 0+$reserves_rule->rule_value,
                 current_hold_count => 0+$hold_count,
             );
         }
     } else {
-        return $self->zero_holds;
+        return $self->zero_holds_allowed;
     }
     return;
 }
@@ -314,7 +318,7 @@ sub zero_holds_allowed {
     return unless my $reserves_rule = $self->_get_rule('reservesallowed');
     return unless my $per_record_rule = $self->_get_rule('holds_per_record');
 
-    if (($reserves_rule->rule_value ne '' && $reserves_rule->rule_value == 0)
+    if (($reserves_rule->rule_value ne '' && $reserves_rule->rule_value ne 'Unlimited' && $reserves_rule->rule_value == 0)
         || ($per_record_rule->rule_value ne '' && $per_record_rule->rule_value == 0)
     ) {
         return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Hold::ZeroHoldsAllowed->new;

@@ -21,38 +21,35 @@
         "200": {
           "description": "Article requet availability information for items of biblio.",
           "schema": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "biblio_id": {
-                  "type": "integer",
-                  "description": "Record internal identifier"
-                },
-                "availability": {
-                  "type": "object",
-                  "properties": {
-                    "available": {
-                      "type": "boolean",
-                      "description": "Availability status"
-                    },
-                    "confirmations": {
-                      "$ref": "openapi/definitions.json#/availability~1reason"
-                    },
-                    "notes": {
-                      "$ref": "openapi/definitions.json#/availability~1reason"
-                    },
-                    "unavailability": {
-                      "$ref": "openapi/definitions.json#/availability~1reason"
-                    }
+            "type": "object",
+            "properties": {
+              "biblio_id": {
+                "type": "integer",
+                "description": "Record internal identifier"
+              },
+              "availability": {
+                "type": "object",
+                "properties": {
+                  "available": {
+                    "type": "boolean",
+                    "description": "Availability status"
+                  },
+                  "confirmations": {
+                    "$ref": "openapi/definitions.json#/availability~1reason"
+                  },
+                  "notes": {
+                    "$ref": "openapi/definitions.json#/availability~1reason"
+                  },
+                  "unavailability": {
+                    "$ref": "openapi/definitions.json#/availability~1reason"
                   }
-                },
-                "items_availability": {
-                  "description": "Availability of each item in this biblio",
-                  "type": ["array", "null"],
-                  "items": {
-                    "$ref": "openapi/definitions.json#/availability~1item"
-                  }
+                }
+              },
+              "items_availability": {
+                "description": "Availability of each item in this biblio",
+                "type": ["array", "null"],
+                "items": {
+                  "$ref": "openapi/definitions.json#/availability~1item"
                 }
               }              
             }
@@ -126,21 +123,18 @@
         "200": {
           "description": "Hold availability information for items of biblio.",
           "schema": {
-            "type": "array",
-            "items": {
-              "allOf": [
-                { "$ref": "openapi/definitions.json#/availability~1biblio" },
-                {
-                  "type": "object",
-                  "properties": {
-                    "hold_queue_length": {
-                      "type": "integer",
-                      "minimum": 0
-                    }
+            "allOf": [
+              { "$ref": "openapi/definitions.json#/availability~1biblio" },
+              {
+                "type": "object",
+                "properties": {
+                  "hold_queue_length": {
+                    "type": "integer",
+                    "minimum": 0
                   }
                 }
-              ]
-            }
+              }
+            ]
           }
         },
         "400": {
@@ -195,8 +189,7 @@
         "200": {
           "description": "Availability information in search context for items of biblio.",
           "schema": {
-            "type": "array",
-            "items": { "$ref": "openapi/definitions.json#/availability~1biblio" }
+            "$ref": "openapi/definitions.json#/availability~1biblio"
           }
         },
         "400": {
@@ -241,8 +234,7 @@
         "200": {
           "description": "Article request availability information for specific item.",
           "schema": {
-            "type": "array",
-            "items": { "$ref": "openapi/definitions.json#/availability~1item" }
+            "$ref": "openapi/definitions.json#/availability~1item"
           }
         },
         "400": {
@@ -305,8 +297,7 @@
         "200": {
           "description": "Hold availability information for specific item.",
           "schema": {
-            "type": "array",
-            "items": { "$ref": "openapi/definitions.json#/availability~1item" }
+             "$ref": "openapi/definitions.json#/availability~1item"
           }
         },
         "400": {

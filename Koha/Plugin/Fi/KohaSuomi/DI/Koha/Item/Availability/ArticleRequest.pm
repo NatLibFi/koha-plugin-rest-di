@@ -86,30 +86,6 @@ sub new {
     return $self;
 }
 
-sub in_intranet {
-    my ($self) = @_;
-    my $reason;
-
-    $self->reset;
-
-    my $patron;
-    unless ($patron = $self->patron) {
-        Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::MissingParameter->throw(
-            error => 'Missing parameter patron. This level of availability query '
-            .'requires Koha::Item::Availability::ArticleRequest to have a patron parameter.'
-        );
-    }
-
-    $self->common_biblio_checks;
-    $self->common_biblioitem_checks;
-    $self->common_issuing_rule_checks;
-    $self->common_item_checks;
-    $self->common_library_item_rule_checks;
-    $self->common_patron_checks;
-
-    return $self;
-}
-
 sub in_opac {
     my ($self) = @_;
     my $reason;

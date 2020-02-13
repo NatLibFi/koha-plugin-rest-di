@@ -73,32 +73,16 @@ sub new {
 
     my $self = $class->SUPER::new($params);
 
+    # Optionally, query ALL possible transfer limits for every item in order
+    # to generate a list of available pickup locations.
+    # Don't provide the following parameter if you want to skip this step.
+    $self->{'query_pickup_locations'} = $params->{'query_pickup_locations'};
     # Additionally, consider any transfer limits to pickup library by
     # providing to_branch parameter with branchcode of pickup library
     $self->{'to_branch'} = $params->{'to_branch'};
     # Check only first n available items by providing the value of n
     # in parameter 'limit'.
     $self->{'limit'} = $params->{'limit'};
-
-    return $self;
-}
-
-sub in_intranet {
-    my ($self, $params) = @_;
-
-    $self->reset;
-
-    my $patron;
-    unless ($patron = $self->patron) {
-        Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::MissingParameter->throw(
-            error => 'Missing parameter patron. This level of availability query '
-            .'requires Koha::Plugin::Fi::KohaSuomi::DI::Koha::Biblio::Availability::Hold to have a patron parameter.'
-        );
-    }
-
-    $params->{'intranet'} = 1;
-    # Item looper
-    $self->_item_looper($params);
 
     return $self;
 }
@@ -161,13 +145,6 @@ sub _item_looper {
     $self->confirmations($first_item_avail->confirmations);
     $self->notes($first_item_avail->notes);
 
-    # If we are looping in intranet, we can override any unavailabilities
-    my $intranet = $params->{'intranet'} ? 1:0;
-    my $override = 0;
-    if ($intranet && C4::Context->preference('AllowHoldPolicyOverride')) {
-        $override = 1;
-    }
-
     # Stop calculating item availabilities after $limit available items are found.
     # E.g. parameter 'limit' with value 1 will find only one available item and
     # return biblio as available if no other unavailabilities are found. If you
@@ -187,25 +164,30 @@ sub _item_looper {
         borrowernumber => $patron->borrowernumber,
     })->as_list if $patron;
     $self->{'hold_queue_length'} = scalar(@holds) || 0;
+    my $pickup_locations = {};
     foreach my $item (@items) {
         # Break out of loop after $limit items are found available
         if (defined $limit && @{$self->{'item_availabilities'}} >= $limit) {
             last;
         }
-        my $item_availability = $self->_item_check($item, $patron, \@holds, \@nonfound_holds, $intranet, $override);
-        if ($item_availability->available) {
+        my $item_availability = $self->_item_check($item, $patron, \@holds, \@nonfound_holds);
+        use Data::Dumper; warn Dumper $item_availability->in_opac->to_api;
+        my $unavails = $item_availability->unavailabilities;
+        if ($item_availability->available
+            || ($item_availability->unavailable == 1
+                && exists $unavails->{'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Hold::ItemLevelHoldNotAllowed'})) {
+            if ($self->{'query_pickup_locations'}) {
+                my $notes = $item_availability->notes;
+                if (defined $notes && ($notes = $notes->{'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::PickupLocations'})) {
+                    foreach my $branchcode (@{$notes->to_libraries}) {
+                        $pickup_locations->{$branchcode} = 1;
+                    }
+                }
+            }
             push @{$self->{'item_availabilities'}}, $item_availability;
             $count++;
         } else {
-            my $unavails = $item_availability->unavailabilities;
-            # If Item level hold is not allowed and it is the only unavailability
-            # reason, push the item to item_availabilities.
-            if ($item_availability->unavailable == 1 && exists
-                $unavails->{ 'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Hold::ItemLevelHoldNotAllowed'}){
-                push @{$self->{'item_availabilities'}}, $item_availability;
-            } else {
-                push @{$self->{'item_unavailabilities'}}, $item_availability;
-            }
+            push @{$self->{'item_unavailabilities'}}, $item_availability;
         }
     }
 
@@ -214,16 +196,19 @@ sub _item_looper {
     if (@{$self->{'item_availabilities'}} == 0) {
         $self->unavailable(Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Biblio::NoAvailableItems->new);
     }
-
+    $self->note(Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Biblio::PickupLocations->new(
+        to_libraries => [sort { $a cmp $b } keys %$pickup_locations]
+    )) if $self->{'query_pickup_locations'};
     return $self;
 }
 
 sub _item_check {
-    my ($self, $item, $patron, $holds, $nonfound_holds, $intranet, $override) = @_;
+    my ($self, $item, $patron, $holds, $nonfound_holds) = @_;
 
     my $item_availability = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Item::Availability::Hold->new({
         item => $item,
         patron => $patron,
+        query_pickup_locations => $self->{'query_pickup_locations'},
         to_branch => $self->to_branch,
     });
 
@@ -235,20 +220,7 @@ sub _item_check {
     });
     $item_availability->common_item_checks({ holds => $holds });
     $item_availability->common_library_item_rule_checks;
-
-    unless ($intranet) {
-        $item_availability->opac_specific_issuing_rule_checks;
-    }
-    if ($override) {
-        # If in intranet and AllowHoldPolicyOverride is enabled, convert
-        # unavailabilities into confirmations.
-        $item_availability->confirmations({
-            %{$item_availability->unavailabilities},
-            %{$item_availability->confirmations}
-        });
-        $item_availability->unavailabilities({});
-        $item_availability->available(1);
-    }
+    $item_availability->opac_specific_issuing_rule_checks;
     return $item_availability;
 }
 

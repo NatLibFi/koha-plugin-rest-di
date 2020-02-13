@@ -83,30 +83,6 @@ sub new {
     return $self;
 }
 
-sub in_intranet {
-    my ($self, $params) = @_;
-
-    $self->reset;
-
-    my $patron;
-    unless ($patron = $self->patron) {
-        Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::MissingParameter->throw(
-            error => 'Missing parameter patron. This level of availability query '
-            .'requires Koha::Biblio::Availability::ArticleRequest to have a patron parameter.'
-        );
-    }
-
-    $params->{'intranet'} = 1;
-
-    $self->common_biblio_checks($params);
-    return $self unless $self->{available};
-
-    # Item looper
-    $self->_item_looper($params);
-
-    return $self;
-}
-
 sub in_opac {
     my ($self, $params) = @_;
 

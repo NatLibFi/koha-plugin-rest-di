@@ -46,11 +46,9 @@ sub biblio_article_request {
     my $borrowernumber = $c->validation->param('patron_id');
     my $to_branch = $c->validation->param('library_id');
     my $limit_items = $c->validation->param('limit_items');
-    my $patron;
-    my $librarian;
 
     return try {
-        ($patron, $librarian) = _get_patron($c, $user, $borrowernumber);
+        my $patron = Koha::Patrons->find($borrowernumber);
 
         my $biblionumber = $c->validation->output->{'biblio_id'};
         my $params = {
@@ -60,17 +58,13 @@ sub biblio_article_request {
         $params->{'to_branch'} = $to_branch if $to_branch;
         $params->{'limit'} = $limit_items if $limit_items;
 
+        my $availability = undef;
         if (my $biblio = Koha::Biblios->find($biblionumber)) {
             $params->{'biblio'} = $biblio;
-            my $availability = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::ArticleRequest->biblio($params);
-            unless ($librarian) {
-                push @availabilities, $availability->in_opac->to_api;
-            } else {
-                push @availabilities, $availability->in_intranet->to_api;
-            }
+            $availability = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::ArticleRequest->biblio($params);
         }
 
-        return $c->render(status => 200, openapi => \@availabilities);
+        return $c->render(status => 200, openapi => $availability->in_opac->to_api);
     }
     catch {
         if ($_->isa('Koha::Exceptions::AuthenticationRequired')) {
@@ -88,18 +82,15 @@ sub biblio_article_request {
 sub biblio_hold {
     my $c = shift->openapi->valid_input or return;
 
-    my @availabilities;
     my $user = $c->stash('koha.user');
     my $biblionumber = $c->validation->output->{'biblio_id'};
     my $borrowernumber = $c->validation->param('patron_id');
     my $to_branch = $c->validation->param('library_id');
     my $query_pickup_locations = $c->validation->param('query_pickup_locations');
     my $limit_items = $c->validation->param('limit_items');
-    my $patron;
-    my $librarian;
 
     return try {
-        ($patron, $librarian) = _get_patron($c, $user, $borrowernumber);
+        my $patron = Koha::Patrons->find($borrowernumber);
 
         my $params = {
             patron => $patron,
@@ -109,17 +100,13 @@ sub biblio_hold {
         $params->{'to_branch'} = $to_branch if $to_branch;
         $params->{'limit'} = $limit_items if $limit_items;
 
+        my $availability = undef;
         if (my $biblio = Koha::Biblios->find($biblionumber)) {
             $params->{'biblio'} = $biblio;
-            my $availability = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Hold->biblio($params);
-            unless ($librarian) {
-                push @availabilities, $availability->in_opac->to_api;
-            } else {
-                push @availabilities, $availability->in_intranet->to_api;
-            }
+            $availability = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Hold->biblio($params);
         }
 
-        return $c->render(status => 200, openapi => \@availabilities);
+        return $c->render(status => 200, openapi => $availability->in_opac->to_api);
     }
     catch {
         if ($_->isa('Koha::Exceptions::AuthenticationRequired')) {
@@ -139,15 +126,14 @@ sub biblio_search {
 
     my $biblionumber = $c->validation->param('biblio_id');
 
-    my @availabilities;
-
     return try {
+        my $availability = undef;
         if (my $biblio = Koha::Biblios->find($biblionumber)) {
-            push @availabilities, Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Search->biblio({
+            $availability = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Search->biblio({
                 biblio => $biblio
-            })->in_opac->to_api;
+            });
         }
-        return $c->render(status => 200, openapi => \@availabilities);
+        return $c->render(status => 200, openapi => $availability->in_opac->to_api);
     }
     catch {
         Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::rethrow_exception($_);
@@ -157,15 +143,12 @@ sub biblio_search {
 sub item_article_request {
     my $c = shift->openapi->valid_input or return;
 
-    my @availabilities;
     my $user = $c->stash('koha.user');
     my $borrowernumber = $c->validation->param('patron_id');
     my $to_branch = $c->validation->param('library_id');
-    my $patron;
-    my $librarian;
 
     return try {
-        ($patron, $librarian) = _get_patron($c, $user, $borrowernumber);
+        my $patron = Koha::Patrons->find($borrowernumber);
 
         my $itemnumber = $c->validation->output->{'item_id'};
         my $params = {
@@ -174,17 +157,13 @@ sub item_article_request {
         if ($to_branch) {
             $params->{'to_branch'} = $to_branch;
         }
+        my $availability = undef;
         if (my $item = Koha::Items->find($itemnumber)) {
             $params->{'item'} = $item;
-            my $availability = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::ArticleRequest->item($params);
-            unless ($librarian) {
-                push @availabilities, $availability->in_opac->to_api;
-            } else {
-                push @availabilities, $availability->in_intranet->to_api;
-            }
+            $availability = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::ArticleRequest->item($params);
         }
 
-        return $c->render(status => 200, openapi => \@availabilities);
+        return $c->render(status => 200, openapi => $availability->in_opac->to_api);
     }
     catch {
         if ($_->isa('Koha::Exceptions::AuthenticationRequired')) {
@@ -207,11 +186,9 @@ sub item_hold {
     my $borrowernumber = $c->validation->param('patron_id');
     my $query_pickup_locations = $c->validation->param('query_pickup_locations');
     my $to_branch = $c->validation->param('library_id');
-    my $patron;
-    my $librarian;
 
     return try {
-        ($patron, $librarian) = _get_patron($c, $user, $borrowernumber);
+        my $patron = Koha::Patrons->find($borrowernumber);
 
         my $itemnumber = $c->validation->output->{'item_id'};
         my $params = {
@@ -223,17 +200,13 @@ sub item_hold {
         if ($to_branch) {
             $params->{'to_branch'} = $to_branch;
         }
+        my $availability = undef;
         if (my $item = Koha::Items->find($itemnumber)) {
             $params->{'item'} = $item;
-            my $availability = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Hold->item($params);
-            unless ($librarian) {
-                push @availabilities, $availability->in_opac->to_api;
-            } else {
-                push @availabilities, $availability->in_intranet->to_api;
-            }
+            $availability = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Hold->item($params);
         }
 
-        return $c->render(status => 200, openapi => \@availabilities);
+        return $c->render(status => 200, openapi => $availability->in_opac->to_api);
     }
     catch {
         if ($_->isa('Koha::Exceptions::AuthenticationRequired')) {
@@ -246,43 +219,6 @@ sub item_hold {
         }
         Koha::Exceptions::rethrow_exception($_);
     };
-}
-
-=head2 Internal methods
-
-=head3 _get_patron
-
-=cut
-
-sub _get_patron {
-    my ($c, $user, $borrowernumber) = @_;
-
-    my $patron;
-    my $librarian = 0;
-
-    unless ($user) {
-        Koha::Exceptions::AuthenticationRequired->throw if $borrowernumber;
-    }
-    if ($user && haspermission($user->userid, { borrowers => 1 })) {
-        $librarian = 1;
-    }
-    if ($borrowernumber) {
-        if ($borrowernumber == $user->borrowernumber) {
-            $patron = $user;
-        } else {
-            if ($librarian) {
-                $patron = Koha::Patrons->find($borrowernumber);
-            } else {
-                Koha::Exceptions::NoPermission->throw(
-                    required_permissions => "borrowers"
-                );
-            }
-        }
-    } else {
-        $patron = $user;
-    }
-
-    return ($patron, $librarian);
 }
 
 1;

@@ -346,6 +346,45 @@ sub onloan {
     }
 }
 
+=head3 pickup_locations
+
+Gets list of available pickup locations for item hold.
+
+Returns Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::PickupLocations.
+
+=cut
+
+sub pickup_locations {
+    my ($self) = @_;
+
+    my $pickup_libraries = Koha::Libraries->search({
+        pickup_location => 1 })->unblessed;
+    my $pickup_locations = [];
+    if (C4::Context->preference('UseBranchTransferLimits')) {
+        my $limit_type = C4::Context->preference('BranchTransferLimitsType');
+        my $limits = Koha::Item::Transfer::Limits->search({
+            fromBranch  => $self->item->holdingbranch,
+            $limit_type => $self->item->branch_transfer_limit_code,
+        })->unblessed;
+
+        foreach my $library (@$pickup_libraries) {
+            if (!grep { $library->{branchcode} eq $_->{toBranch} } @$limits) {
+                push @{$pickup_locations}, $library->{branchcode};
+            }
+        }
+    } else {
+        foreach my $library (@$pickup_libraries) {
+            push @{$pickup_locations}, $library->{branchcode};
+        }
+    }
+
+    @$pickup_locations = sort { $a cmp $b } @$pickup_locations;
+    return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::PickupLocations->new(
+        from_library => $self->item->holdingbranch,
+        to_libraries => $pickup_locations,
+    );
+}
+
 =head3 restricted
 
 Returns Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::Restricted if item is restricted.

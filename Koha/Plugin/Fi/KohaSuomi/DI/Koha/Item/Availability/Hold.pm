@@ -81,44 +81,14 @@ sub new {
 
     my $self = $class->SUPER::new($params);
 
+    # Optionally, query ALL possible transfer limits for every item in order
+    # to generate a list of available pickup locations.
+    # Don't provide the following parameter if you want to skip this step.
+    $self->{'query_pickup_locations'} = $params->{'query_pickup_locations'};
+    $self->{'pickup_locations'} = [];
     # Additionally, consider any transfer limits to pickup library by
     # providing to_branch parameter with branchcode of pickup library
     $self->{'to_branch'} = $params->{'to_branch'};
-
-    return $self;
-}
-
-sub in_intranet {
-    my ($self) = @_;
-    my $reason;
-
-    $self->reset;
-
-    my $item = $self->item;
-    my $patron;
-    unless ($patron = $self->patron) {
-        Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::MissingParameter->throw(
-            error => 'Missing parameter patron. This level of availability query '
-            .'requires Koha::Item::Availability::Hold to have a patron parameter.'
-        );
-    }
-
-    $self->common_biblio_checks;
-    $self->common_biblioitem_checks;
-    $self->common_issuing_rule_checks;
-    $self->common_item_checks;
-    $self->common_library_item_rule_checks;
-    $self->common_patron_checks;
-
-    # Additionally, a librarian can override any unavailabilities if system
-    # preference AllowHoldPolicyOverride is enabled
-    if (C4::Context->preference('AllowHoldPolicyOverride')) {
-        # Copy unavailabilities to reasons to ask for confirmation, and reset
-        # reasons of unavailabilities
-        $self->confirmations({ %{$self->unavailabilities}, %{$self->confirmations} });
-        $self->unavailabilities({});
-        $self->available(1);
-    }
 
     return $self;
 }
@@ -267,6 +237,14 @@ sub common_item_checks {
     }
 
     $self->unavailable($reason) if $reason = $itemcalc->from_another_library;
+    if ($self->{'query_pickup_locations'} && ($reason = $itemcalc->pickup_locations)) {
+        if (@{$reason->to_libraries} == 0) {
+            $self->unavailable(Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::CannotBeTransferred->new(
+                from_library => $item->holdingbranch
+            ));
+        }
+        $self->note($reason);
+    }
     if ($self->to_branch && ($reason = $itemcalc->transfer_limit($self->to_branch))) {
         $self->unavailable($reason);
     }
