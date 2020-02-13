@@ -42,3 +42,4 @@ Travis will build the release provided the commit includes a suitable version ta
 2. `git push --tags origin master`
 
 To manually build a release locally, run `./build.sh`.
+
