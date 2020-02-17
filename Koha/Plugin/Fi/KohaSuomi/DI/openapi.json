@@ -338,6 +338,131 @@
       }
     }
   },
+  "/biblios/{biblio_id}/serialsubscriptions": {
+    "get": {
+      "x-mojo-to": "Fi::KohaSuomi::DI::BiblioController#get_serial_subscriptions",
+      "operationId": "serialSubscriptionsByBiblioDI",
+      "tags": ["biblios", "serials"],
+      "parameters": [
+        { "$ref": "openapi/parameters.json#/biblio_id_pp" }
+      ],
+      "produces": [
+        "application/json"
+      ],
+      "responses": {
+        "200": {
+          "description": "Serial subscriptions data for the given biblio record"
+        },
+        "404": {
+          "description": "Biblio not found",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "500": {
+          "description": "Internal error",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "503": {
+          "description": "Under maintenance",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        }
+      }  
+    },
+    "x-koha-authorization": {
+      "permissions": {
+        "catalogue": "1"
+      }
+    }
+  },
+  "/patrons/{patron_id}": {
+    "get": {
+      "x-mojo-to": "Fi::KohaSuomi::DI::PatronController#get",
+      "operationId": "getPatronDI",
+      "tags": ["patrons"],
+      "parameters": [
+        { "$ref": "openapi/parameters.json#/patron_id_pp" },
+        {
+          "name": "query_blocks",
+          "in": "query",
+          "description": "Return information about patron's blocks. 1 = yes, 0 or no parameter = no.",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "query_relationships",
+          "in": "query",
+          "description": "Return information about patron's guarantors or guarantees. 1 = yes, 0 or no parameter = no.",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "query_messaging_preferences",
+          "in": "query",
+          "description": "Return information about patron's messaging preferences. 1 = yes, 0 or no parameter = no.",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "query_permissions",
+          "in": "query",
+          "description": "Return information about patron's permissions. 1 = yes, 0 or no parameter = no.",
+          "required": false,
+          "type": "integer"
+        }      
+      ],
+      "produces": [
+          "application/json"
+      ],
+      "responses": {
+        "200": {
+          "description": "Patron and additional information",
+          "schema": {
+            "type": "object"
+          }
+        },
+        "401": {
+          "description": "Authentication required",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "403": {
+          "description": "Access forbidden",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "404": {
+          "description": "Patron not found",
+          "schema": {
+           "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "500": {
+          "description": "Internal server error",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "503": {
+          "description": "Under maintenance",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        }
+      },
+      "x-koha-authorization": {
+        "permissions": {
+          "borrowers": "1"
+        }
+      }
+    }
+  },
   "/patrons/{patron_id}/articlerequests": {
     "get": {
       "x-mojo-to": "Fi::KohaSuomi::DI::ArticleRequestController#list",
@@ -682,59 +807,106 @@
       }
     }
   },
-  "/patrons/{patron_id}/status": {
-    "get": {
-      "x-mojo-to": "Fi::KohaSuomi::DI::PatronController#get_status",
-      "operationId": "getstatusPatronDI",
-      "tags": ["patrons"],
+  "/patrons/{patron_id}/checkouts/history": {
+    "delete": {
+      "x-mojo-to": "Fi::KohaSuomi::DI::PatronController#purge_checkout_history",
+      "operationId": "purgeCheckoutHistoryDI",
+      "tags": ["patrons", "checkouts"],
       "parameters": [
         { "$ref": "openapi/parameters.json#/patron_id_pp" }
       ],
       "produces": [
-          "application/json"
+        "application/json"
       ],
       "responses": {
-        "200": {
-          "description": "Patron with status information"
+        "204": {
+          "description": "Checkout history deleted successfully"
         },
         "401": {
           "description": "Authentication required",
-          "schema": {
-            "$ref": "openapi/definitions.json#/error"
-          }
+          "schema": { "$ref": "openapi/definitions.json#/error" }
         },
         "403": {
           "description": "Access forbidden",
-          "schema": {
-            "$ref": "openapi/definitions.json#/error"
-          }
+          "schema": { "$ref": "openapi/definitions.json#/error" }
         },
         "404": {
           "description": "Patron not found",
-          "schema": {
-           "$ref": "openapi/definitions.json#/error"
-          }
+          "schema": { "$ref": "openapi/definitions.json#/error" }
         },
         "500": {
-          "description": "Internal server error",
-          "schema": {
-            "$ref": "openapi/definitions.json#/error"
-          }
+          "description": "Internal error",
+          "schema": { "$ref": "openapi/definitions.json#/error" }
         },
         "503": {
           "description": "Under maintenance",
-          "schema": {
-            "$ref": "openapi/definitions.json#/error"
-          }
+          "schema": { "$ref": "openapi/definitions.json#/error" }
         }
       },
       "x-koha-authorization": {
         "permissions": {
-          "borrowers": "1"
+          "circulate": "circulate_remaining_permissions"
         }
       }
     }
   },
+  "/patrons/{patron_id}/messaging_preferences": {
+    "put": {
+      "x-mojo-to": "Fi::KohaSuomi::DI::PatronController::edit_messaging_preferences",
+      "operationId": "editMessagingPreferencesDI",
+      "description": "Modifies patron's messaging preferences. Please note that not all parameters defined in body object's documentation can actually be used for each message option due to dynamic configuration. Make a GET request for patron with query_messaging_preferences=1 first to see whether an option is configurable or if message transport type is available.",
+      "x-koha-authorization": {
+        "permissions": {
+          "borrowers": "1"
+        }
+      },
+      "tags": ["notices"],
+      "parameters": [
+        { "$ref": "openapi/parameters.json#/patron_id_pp" }, 
+        {
+          "name": "body",
+          "in": "body",
+          "description": "A JSON object containing information on messaging preferences",
+          "required": true,
+          "schema": { "$ref" : "openapi/definitions/messagingpreference.json" }
+        }
+      ],
+      "produces": [
+        "application/json"
+      ],
+      "responses": {
+        "200": {
+          "description": "A messaging preferences object",
+          "schema": { "$ref" : "openapi/definitions/messagingpreference.json" }
+        },
+        "400": {
+          "description": "Missing or wrong parameters",
+          "schema": { "$ref": "openapi/definitions.json#/error" }
+        },
+        "401": {
+          "description": "Authentication required",
+          "schema": { "$ref": "openapi/definitions.json#/error" }
+        },
+        "403": {
+          "description": "Access forbidden",
+          "schema": { "$ref": "openapi/definitions.json#/error" }
+        },
+        "404": {
+          "description": "Patron or category not found",
+          "schema": { "$ref": "openapi/definitions.json#/error" }
+        },
+        "500": {
+          "description": "Internal error",
+          "schema": { "$ref": "openapi/definitions.json#/error" }
+        },
+        "503": {
+          "description": "Under maintenance",
+          "schema": { "$ref": "openapi/definitions.json#/error" }
+        }
+      }
+    }
+  },
+
   "/patrons/validation": {
     "post": {
       "x-mojo-to": "Fi::KohaSuomi::DI::PatronController#validate_credentials",

@@ -25,6 +25,7 @@ use Koha::Biblios;
 
 use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability;
 use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::Patron;
+use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Patron::Message::Preferences;
 
 =head1 Koha::Plugin::Fi::KohaSuomi::DI::PatronController
 
@@ -32,13 +33,13 @@ A class implementing the controller methods for the patron-related API
 
 =head2 Class Methods
 
-=head3 get_status
+=head3 get
 
-Get borrower's status
+Get borrower
 
 =cut
 
-sub get_status {
+sub get {
     my $c = shift->openapi->valid_input or return;
 
     return try {
@@ -51,20 +52,83 @@ sub get_status {
         }
 
         my $ret = $patron->to_api;
-        
-        my $patron_checks = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::Patron->new($patron);
 
-        my %blocks;
-        my $ex;
-        $blocks{ref($ex)} = $ex if $ex = $patron_checks->debarred;
-        $blocks{ref($ex)} = $ex if $ex = $patron_checks->debt_hold;
-        $blocks{ref($ex)} = $ex if $ex = $patron_checks->debt_checkout_guarantees;
-        $blocks{ref($ex)} = $ex if $ex = $patron_checks->exceeded_maxreserves;
-        $blocks{ref($ex)} = $ex if $ex = $patron_checks->expired;
-        $blocks{ref($ex)} = $ex if $ex = $patron_checks->gonenoaddress;
-        $blocks{ref($ex)} = $ex if $ex = $patron_checks->lost;
+        if ($c->validation->param('query_blocks')) {
+            my $patron_checks = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::Patron->new($patron);
 
-        $ret->{blocks} = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability->to_api_exception(\%blocks);
+            my %blocks;
+            my $ex;
+            $blocks{ref($ex)} = $ex if $ex = $patron_checks->debarred;
+            $blocks{ref($ex)} = $ex if $ex = $patron_checks->debt_hold;
+            $blocks{ref($ex)} = $ex if $ex = $patron_checks->debt_checkout_guarantees;
+            $blocks{ref($ex)} = $ex if $ex = $patron_checks->exceeded_maxreserves;
+            $blocks{ref($ex)} = $ex if $ex = $patron_checks->expired;
+            $blocks{ref($ex)} = $ex if $ex = $patron_checks->gonenoaddress;
+            $blocks{ref($ex)} = $ex if $ex = $patron_checks->lost;
+
+            $ret->{blocks} = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability->to_api_exception(\%blocks);
+        }
+
+        if ($c->validation->param('query_relationships')) {
+            my @guarantors;
+            my $guarantor_relationships = $patron->guarantor_relationships;
+            while (my $guarantor = $guarantor_relationships->next()) {
+                my $api_record;
+                my $guarantor_record = $guarantor->guarantor;
+                $api_record->{relationship} = $guarantor->relationship;
+                $api_record->{id} = $guarantor->guarantor_id;
+                $api_record->{surname} = $guarantor_record->surname;
+                $api_record->{firstname} = $guarantor_record->firstname;
+                push @guarantors, $api_record;
+            }
+            my $relationship = $patron->relationship;
+            if ($relationship && $patron->contactname) {
+                my $api_record;
+                $api_record->{'relationship'} = $relationship;
+                $api_record->{'surname'} = $patron->contactname;
+                $api_record->{'firstname'} = $patron->contactfirstname;
+                push @guarantors, $api_record;
+            }
+
+            my @guarantees;
+            my $guarantee_relationships = $patron->guarantee_relationships;
+            while (my $guarantee = $guarantee_relationships->next()) {
+                my $api_record;
+                my $guarantee_record = $guarantee->guarantee;
+                $api_record->{relationship} = $guarantee->relationship;
+                $api_record->{id} = $guarantee->guarantee_id;
+                $api_record->{surname} = $guarantee_record->surname;
+                $api_record->{firstname} = $guarantee_record->firstname;
+                push @guarantees, $api_record;
+            }
+
+            $ret->{guarantors} = \@guarantors;
+            $ret->{guarantees} = \@guarantees;
+        }
+
+        if ($c->validation->param('query_messaging_preferences')) {
+            if ( ! C4::Context->preference('EnhancedMessagingPreferences') ) {
+                return $c->render( 
+                    status => 403, 
+                    openapi => { error => "Enhanced messaging preferences are not enabled" }
+                );
+            }
+
+            $ret->{messaging_preferences} = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Patron::Message::Preferences->search(
+                { borrowernumber => $patron->borrowernumber }
+            );
+        }
+
+        if ($c->validation->param('query_permissions')) {
+            my $rawPermissions = C4::Auth::haspermission($patron->userid); # defaults to all permissions
+            my @permissions;
+
+            # delete all empty permissions
+            while ( my ($key, $val) = each %{$rawPermissions} ) {
+                push @permissions, $key if $val;
+            }
+            $ret->{permissions} = \@permissions;
+        }
 
         return $c->render(status => 200, openapi => $ret);
     } catch {
@@ -75,6 +139,140 @@ sub get_status {
             return $c->render( status => 500, openapi =>
                 { error => "Something went wrong, check the logs." });
         }
+    };
+}
+
+=head3 purge_checkout_history
+
+Deletes all items from checkout history
+
+=cut
+
+sub purge_checkout_history {
+    my $c = shift->openapi->valid_input or return;
+
+    my $borrowernumber = $c->validation->param('patron_id');
+    my $patron;
+    return try {
+        my $patrons = Koha::Patrons->search({
+            'me.borrowernumber' => $borrowernumber
+        });
+        $patrons->anonymise_issue_history;
+        $patron = $patrons->next;
+
+        return $c->render( status => 204, openapi => {} );
+    }
+    catch {
+        unless ($patron) {
+            return $c->render( status => 404, openapi => {
+                error => "Patron doesn't exist"
+            });
+        }
+        Koha::Exceptions::rethrow_exception($_);
+    };
+}
+
+
+=head3 edit_messaging_preferences
+
+Updates messaging preferences
+
+=cut
+
+sub edit_messaging_preferences {
+    my $c = shift->openapi->valid_input or return;
+
+    if (!C4::Context->preference('EnhancedMessagingPreferences')) {
+        return $c->render( 
+            status => 403, 
+            openapi => { error => "Enhanced messaging preferences are not enabled" }
+        );
+    }
+
+    if (!C4::Context->preference('EnhancedMessagingPreferencesOPAC')) {
+        return $c->render( 
+            status => 403, 
+            openapi => { error => "Updating of enhanced messaging preferences in OPAC not enabled" }
+        );
+    }
+
+    my $borrowernumber = $c->validation->param('patron_id');
+    my $body           = $c->validation->param('body');
+
+    my $found = Koha::Patrons->find($borrowernumber);
+
+    return try {
+        die unless $found;
+        my $actionLog = [];
+        foreach my $in (keys %{$body}) {
+            my $preference =
+                Koha::Plugin::Fi::KohaSuomi::DI::Koha::Patron::Message::Preferences->find_with_message_name({
+                    borrowernumber => $borrowernumber,
+                    message_name => $in
+                });
+
+            # Format wants_digest and days_in_advance values
+            my $wants_digest = $body->{$in}->{'digest'} ?
+                $body->{$in}->{'digest'}->{'value'} ? 1 : 0 : $preference ?
+                $preference->wants_digest ? 1 : 0 : 0;
+            my $days_in_advance = $body->{$in}->{'days_in_advance'} ?
+                defined $body->{$in}->{'days_in_advance'}->{'value'} ?
+                    $body->{$in}->{'days_in_advance'}->{'value'} : undef : undef;
+
+            # HASHref for updated preference
+            my @transport_types;
+            foreach my $mtt (keys %{$body->{$in}->{'transport_types'}}) {
+                if ($body->{$in}->{'transport_types'}->{$mtt}) {
+                    push @transport_types, $mtt;
+                }
+            }
+            my $edited_preference = {
+                wants_digest => $wants_digest,
+                days_in_advance => $days_in_advance,
+                message_transport_types => \@transport_types
+            };
+
+            # Unless a preference for this message name exists, create it
+            unless ($preference) {
+                my $attr = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Patron::Message::Attributes->find({
+                    message_name => $in
+                });
+                unless ($attr) {
+                    Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::BadParameter->throw(
+                        error => "Message type $in not found."
+                    );
+                }
+                $edited_preference->{'message_attribute_id'} =
+                        $attr->message_attribute_id;
+                if ($borrowernumber) {
+                    $edited_preference->{'borrowernumber'}=$found->borrowernumber;
+                } else {
+                    $edited_preference->{'categorycode'}=$found->categorycode;
+                }
+                $preference = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Patron::Message::Preference->new(
+                    $edited_preference)->store;
+            }
+            # Otherwise, modify the already-existing one
+            else {
+                $preference->set($edited_preference)->store;
+            }
+            $preference->_push_to_action_buffer($actionLog);
+        }
+
+        # Finally, return the preferences
+        my $preferences = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Patron::Message::Preferences->search({borrowernumber => $borrowernumber});
+        $preferences->_log_action_buffer($actionLog, $borrowernumber);
+
+        return $c->render(status => 200, openapi => $preferences);
+    }
+    catch {
+        unless ($found) {
+            return $c->render( status => 400, openapi => { error => "Patron or category not found" } );
+        }
+        if ($_->isa('Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::BadParameter')) {
+            return $c->render( status => 400, openapi => { error => $_->error });
+        }
+        Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::rethrow_exception($_);
     };
 }
 
