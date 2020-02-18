@@ -171,7 +171,6 @@ sub _item_looper {
             last;
         }
         my $item_availability = $self->_item_check($item, $patron, \@holds, \@nonfound_holds);
-        use Data::Dumper; warn Dumper $item_availability->in_opac->to_api;
         my $unavails = $item_availability->unavailabilities;
         if ($item_availability->available
             || ($item_availability->unavailable == 1
