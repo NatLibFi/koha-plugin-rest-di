@@ -338,6 +338,41 @@
       }
     }
   },
+  "/biblios/{biblio_id}/holdings": {
+    "get": {
+      "x-mojo-to": "Fi::KohaSuomi::DI::BiblioController#get_holdings",
+      "operationId": "holdingsByBiblioDI",
+      "tags": ["biblios", "holdings"],
+      "parameters": [
+        { "$ref": "openapi/parameters.json#/biblio_id_pp" }
+      ],
+      "produces": [
+        "application/json"
+      ],
+      "responses": {
+        "200": {
+          "description": "Holdings records for the given biblio record"
+        },
+        "500": {
+          "description": "Internal error",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "503": {
+          "description": "Under maintenance",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        }
+      }  
+    },
+    "x-koha-authorization": {
+      "permissions": {
+        "catalogue": "1"
+      }
+    }
+  },
   "/biblios/{biblio_id}/serialsubscriptions": {
     "get": {
       "x-mojo-to": "Fi::KohaSuomi::DI::BiblioController#get_serial_subscriptions",

@@ -31,6 +31,50 @@ A class implementing the controller methods for the patron-related API
 
 =head2 Class Methods
 
+=head3 get_holdings
+
+=cut
+
+sub get_holdings {
+    my $c = shift->openapi->valid_input or return;
+ 
+    my $schema = Koha::Database->new()->schema();
+    my @holdings = $schema->resultset('Holding')->search(
+        { 'biblionumber' => $c->validation->param('biblio_id'), 'me.deleted_on' => undef },
+        {
+            join         => 'holdings_metadatas',
+            '+columns'   => [ qw/ holdings_metadatas.format holdings_metadatas.schema holdings_metadatas.metadata / ],
+            result_class => 'DBIx::Class::ResultClass::HashRefInflator'
+        }
+    );
+
+    # Better field names and additional information
+    for my $holding (@holdings) {
+        $holding->{metadata} = delete $holding->{holdings_metadatas};
+        $holding->{collection_code} = delete $holding->{ccode};
+        $holding->{create_date} = delete $holding->{datecreated};
+        $holding->{holding_library_id} = delete $holding->{holdingbranch};
+        $holding->{suppressed} = delete $holding->{suppress};
+
+        if ($holding->{ccode}) {
+            my $ccode = Koha::AuthorisedValues->search({
+                category => 'CCODE',
+                authorised_value => $holding->{ccode}
+            })->next;
+            $holding->{ccode_description} = $ccode->lib if defined $ccode;
+        }
+        if ($holding->{location}) {
+            my $loc = Koha::AuthorisedValues->search({
+                category => 'LOC',
+                authorised_value => $holding->{location}
+            })->next;
+            $holding->{location_description} = $loc->lib if defined $loc;
+        }
+    }
+
+    return $c->render(status => 200, openapi => { holdings => \@holdings });
+}
+
 =head3 get_serial_subscriptions
 
 =cut
