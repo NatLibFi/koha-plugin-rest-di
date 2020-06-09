@@ -26,6 +26,22 @@ Once the setup is complete you will need to enable plugins by setting UseKohaPlu
 
 You can upload and configure the plugin on the Administration -> Plugins -> Manage Plugins page.
 
+### Required User Permissions
+
+To use all the functionality the plugin provides, the following permissions are needed for the user account used to authenticate for the API:
+
+ - circulate_remaining_permissions
+ - catalogue
+ - borrowers
+   - edit_borrowers 
+   - view_borrower_infos_from_any_libraries
+ - reserveforothers
+ - modify_holds_priority
+ - place_holds
+ - updatecharges
+   - payout
+   - remaining_permissions
+
 ### Installing without a KPZ package
 
 If you need to use the plugin without a KPZ package (e.g. to use a version cloned from git):
