@@ -62,9 +62,13 @@ sub biblio_article_request {
         if (my $biblio = Koha::Biblios->find($biblionumber)) {
             $params->{'biblio'} = $biblio;
             $availability = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::ArticleRequest->biblio($params);
+            return $c->render(status => 200, openapi => $availability->in_opac->to_api);
         }
 
-        return $c->render(status => 200, openapi => $availability->in_opac->to_api);
+        return $c->render(
+            status  => 404,
+            openapi => {error => 'Biblio not found'}
+        );
     }
     catch {
         if ($_->isa('Koha::Exceptions::AuthenticationRequired')) {
@@ -104,9 +108,14 @@ sub biblio_hold {
         if (my $biblio = Koha::Biblios->find($biblionumber)) {
             $params->{'biblio'} = $biblio;
             $availability = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Hold->biblio($params);
+
+            return $c->render(status => 200, openapi => $availability->in_opac->to_api);
         }
 
-        return $c->render(status => 200, openapi => $availability->in_opac->to_api);
+        return $c->render(
+            status  => 404,
+            openapi => {error => 'Biblio not found'}
+        );
     }
     catch {
         if ($_->isa('Koha::Exceptions::AuthenticationRequired')) {
@@ -132,8 +141,13 @@ sub biblio_search {
             $availability = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Search->biblio({
                 biblio => $biblio
             });
+            return $c->render(status => 200, openapi => $availability->in_opac->to_api);
         }
-        return $c->render(status => 200, openapi => $availability->in_opac->to_api);
+
+        return $c->render(
+            status  => 404,
+            openapi => {error => 'Biblio not found'}
+        );
     }
     catch {
         Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::rethrow_exception($_);
@@ -161,9 +175,14 @@ sub item_article_request {
         if (my $item = Koha::Items->find($itemnumber)) {
             $params->{'item'} = $item;
             $availability = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::ArticleRequest->item($params);
+    
+            return $c->render(status => 200, openapi => $availability->in_opac->to_api);
         }
 
-        return $c->render(status => 200, openapi => $availability->in_opac->to_api);
+        return $c->render(
+            status  => 404,
+            openapi => {error => 'Item not found'}
+        );
     }
     catch {
         if ($_->isa('Koha::Exceptions::AuthenticationRequired')) {
@@ -204,9 +223,14 @@ sub item_hold {
         if (my $item = Koha::Items->find($itemnumber)) {
             $params->{'item'} = $item;
             $availability = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Hold->item($params);
+
+            return $c->render(status => 200, openapi => $availability->in_opac->to_api);
         }
 
-        return $c->render(status => 200, openapi => $availability->in_opac->to_api);
+        return $c->render(
+            status  => 404,
+            openapi => {error => 'Item not found'}
+        );
     }
     catch {
         if ($_->isa('Koha::Exceptions::AuthenticationRequired')) {

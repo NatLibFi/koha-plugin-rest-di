@@ -73,6 +73,12 @@
             "$ref": "openapi/definitions.json#/error"
           }
         },
+        "404": {
+          "description": "Biblio not found",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
         "500": {
           "description": "Internal server error",
           "schema": {
@@ -155,6 +161,12 @@
             "$ref": "openapi/definitions.json#/error"
           }
         },
+        "404": {
+          "description": "Biblio not found",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
         "500": {
           "description": "Internal server error",
           "schema": {
@@ -194,6 +206,12 @@
         },
         "400": {
           "description": "Missing or invalid parameters",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "404": {
+          "description": "Biblio not found",
           "schema": {
             "$ref": "openapi/definitions.json#/error"
           }
@@ -251,6 +269,12 @@
         },
         "403": {
           "description": "Forbidden",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "404": {
+          "description": "Item not found",
           "schema": {
             "$ref": "openapi/definitions.json#/error"
           }
@@ -314,6 +338,12 @@
         },
         "403": {
           "description": "Forbidden",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "404": {
+          "description": "Item not found",
           "schema": {
             "$ref": "openapi/definitions.json#/error"
           }
