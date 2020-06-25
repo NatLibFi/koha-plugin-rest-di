@@ -478,6 +478,13 @@
           "description": "Return information about patron's permissions. 1 = yes, 0 or no parameter = no.",
           "required": false,
           "type": "integer"
+        },
+        {
+          "name": "query_messages",
+          "in": "query",
+          "description": "Return patron's messages. 1 = yes, 0 or no parameter = no.",
+          "required": false,
+          "type": "integer"
         }      
       ],
       "produces": [

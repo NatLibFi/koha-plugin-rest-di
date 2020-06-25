@@ -22,6 +22,7 @@ use Mojo::Base 'Mojolicious::Controller';
 use C4::Auth qw( haspermission );
 
 use Koha::Biblios;
+use Koha::Patron::Messages;
 
 use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability;
 use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::Patron;
@@ -120,14 +121,40 @@ sub get {
         }
 
         if ($c->validation->param('query_permissions')) {
-            my $rawPermissions = C4::Auth::haspermission($patron->userid); # defaults to all permissions
+            my $raw_permissions = C4::Auth::haspermission($patron->userid); # defaults to all permissions
             my @permissions;
 
             # delete all empty permissions
-            while ( my ($key, $val) = each %{$rawPermissions} ) {
+            while ( my ($key, $val) = each %{$raw_permissions} ) {
                 push @permissions, $key if $val;
             }
             $ret->{permissions} = \@permissions;
+        }
+
+        if ($c->validation->param('query_messages')) {
+            my $raw_messages = Koha::Patron::Messages->search(
+                {
+                    borrowernumber => $patron->borrowernumber,
+                    message_type => 'B',
+                },
+                {
+                    order_by => ['message_id']
+                }
+            );
+            my @messages;
+
+            while (my $message = $raw_messages->next()) {
+                my $api_record;
+                $api_record->{date} = $message->message_date;
+                $api_record->{message} = $message->message;
+                $api_record->{library_id} = $message->branchcode;
+                push @messages, $api_record;
+            }
+            $ret->{messages} = \@messages;
+        }
+
+        if ($patron->is_going_to_expire) {
+            $ret->{expiry_date_near} = 1;
         }
 
         return $c->render(status => 200, openapi => $ret);
