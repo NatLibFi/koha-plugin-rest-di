@@ -346,8 +346,6 @@ sub list_checkouts {
         # Extract reserved params
         my ( $filtered_params, $reserved_params ) = $c->extract_reserved_params($args);
 
-        $filtered_params->{borrowernumber} = $patron->borrowernumber;
-
         # Merge sorting into query attributes
         $c->dbic_merge_sorting(
             {
@@ -373,6 +371,8 @@ sub list_checkouts {
             $filtered_params = $checkouts_set->attributes_from_api($filtered_params);
             $filtered_params = $c->build_query_params( $filtered_params, $reserved_params );
         }
+
+        $filtered_params->{borrowernumber} = $patron->borrowernumber;
 
         # Perform search
         my $checkouts = $checkouts_set->search( $filtered_params, $attributes );
