@@ -178,6 +178,8 @@ sub to_api {
     $hash->{'hold_queue_length'} = Koha::Holds->search({
         itemnumber => $item->itemnumber
     })->count;
+    $hash->{'collection_code_description'} = $ccode_desc;
+    $hash->{'location_description'} = $loc_desc;
     return $hash;
 }
 
