@@ -983,6 +983,7 @@
     "post": {
       "x-mojo-to": "Fi::KohaSuomi::DI::PatronController#validate_credentials",
       "operationId": "validatePatronCredentialsDI",
+      "description": "DEPRECATED. Use auth/patrons/validation instead.",
       "tags": ["patrons"],
       "parameters": [
         {
@@ -1041,7 +1042,84 @@
             "$ref": "openapi/definitions.json#/error"
           }
         },
-        "503": {
+        "503": {                
+          "description": "Under maintenance",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        }
+      },
+      "x-koha-authorization": {
+        "permissions": {
+          "borrowers": "1"
+        }
+      }
+    }
+  },
+  "/auth/patrons/validation": {
+    "post": {
+      "x-mojo-to": "Fi::KohaSuomi::DI::PatronController#validate_credentials",
+      "operationId": "authValidatePatronCredentialsDI",
+      "description": "Validates password for a patron identified by card number or user id.",
+      "tags": ["patrons"],
+      "parameters": [
+        {
+          "in": "body",
+          "name": "body",
+          "description": "A password validation request",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "cardnumber": {
+                "description": "Card number for the patron",
+                "type": "string"
+              },
+              "userid": {
+                "description": "User login ID for the patron",
+                "type": "string"
+              },
+              "password": {
+                "description": "Password for the patron",
+                "type": "string"
+              }
+            }
+          }
+        }
+      ],
+      "consumes": ["application/json"],
+      "produces": ["application/json"],
+      "responses": {
+        "200": {
+          "description": "Patron information upon successful validation",
+          "schema": {
+            "type": "object"
+          }
+        },
+        "400": {
+          "description": "Bad parameters",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "401": {
+          "description": "Bad username/cardnumber and/or password",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "403": {
+          "description": "Access forbidden",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "500": {
+          "description": "Internal error",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "503": {                
           "description": "Under maintenance",
           "schema": {
             "$ref": "openapi/definitions.json#/error"
