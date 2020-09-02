@@ -360,11 +360,11 @@
             "$ref": "openapi/definitions.json#/error"
           }
         }
-      }
-    },
-    "x-koha-authorization": {
-      "permissions": {
-        "catalogue": "1"
+      },
+      "x-koha-authorization": {
+        "permissions": {
+          "catalogue": "1"
+        }
       }
     }
   },
@@ -395,11 +395,11 @@
             "$ref": "openapi/definitions.json#/error"
           }
         }
-      }  
-    },
-    "x-koha-authorization": {
-      "permissions": {
-        "catalogue": "1"
+      },
+      "x-koha-authorization": {
+        "permissions": {
+          "catalogue": "1"
+        }
       }
     }
   },
@@ -436,11 +436,11 @@
             "$ref": "openapi/definitions.json#/error"
           }
         }
-      }  
-    },
-    "x-koha-authorization": {
-      "permissions": {
-        "catalogue": "1"
+      },
+      "x-koha-authorization": {
+        "permissions": {
+          "catalogue": "1"
+        }
       }
     }
   },
