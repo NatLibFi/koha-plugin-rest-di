@@ -40,13 +40,13 @@ use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Hold;
 OPTIONAL PARAMETERS:
 
 * categorycode      Attempts to match issuing rule with given categorycode
-* rule_itemtype     Attempts to match issuing rule with given itemtype
+* itemtype          Attempts to match issuing rule with given itemtype
 * branchcode        Attempts to match issuing rule with given branchcode
 
-* patron            Stores patron into the object for reusability. Also
+* item              Stores item into the object for reusability. Also
                     attempts to match issuing rule with item's itemtype
-                    unless specificed with "rule_itemtype" parameter.
-* item              stores item into the object for reusability. Also
+                    unless specified with "itemtype" parameter.
+* patron            Stores patron into the object for reusability. Also
                     Attempts to match issuing rule with patron's categorycode
                     unless specified with "categorycode" parameter.
 * biblioitem        Attempts to match issuing rule with itemtype from given
@@ -69,8 +69,8 @@ sub new {
     my $item       = $self->_validate_parameter($params, 'item', 'Koha::Item');
     my $biblioitem = $self->_validate_parameter($params, 'biblioitem', 'Koha::Biblioitem');
 
-    unless ($params->{'rule_itemtype'}) {
-        $params->{'rule_itemtype'} = $item
+    unless ($params->{'itemtype'}) {
+        $params->{'itemtype'} = $item
             ? $item->effective_itemtype
             : $biblioitem
               ? $biblioitem->itemtype
@@ -192,12 +192,12 @@ sub maximum_holds_reached {
     my ($self) = @_;
 
     return unless my $reserves_rule = $self->_get_rule('reservesallowed');
-    my $rule_itemtype = $self->{'rule_params'}->{'rule_itemtype'};
+    my $itemtype = $self->{'rule_params'}->{'itemtype'};
     my $controlbranch = C4::Context->preference('ReservesControlBranch');
 
     if ($reserves_rule->rule_value ne '' && $reserves_rule->rule_value > 0) {
         # Get patron's hold count for holds that match the found issuing rule
-        my $hold_count = $self->_patron_hold_count($rule_itemtype, $controlbranch);
+        my $hold_count = $self->_patron_hold_count($itemtype, $controlbranch);
         if ($hold_count >= $reserves_rule->rule_value) {
             return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Hold::MaximumHoldsReached->new(
                 max_holds_allowed => 0+$reserves_rule->rule_value,
@@ -449,12 +449,12 @@ sub _holds_allowed {
 
     my $args = {
         item => $item,
-        branchcode => $self->branchcode,
-        use_cache => $self->use_cache,
+        branchcode => $self->{'rule_params'}->{'branchcode'} // undef,
+        use_cache => $self->{'use_cache'},
     };
     $args->{patron} = $self->patron if $self->patron;
 
-    my $holdrulecalc = Koha::Availability::Checks::CirculationRule->new($args);
+    my $holdrulecalc = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::CirculationRule->new($args);
 
     return !$holdrulecalc->zero_holds_allowed;
 }
