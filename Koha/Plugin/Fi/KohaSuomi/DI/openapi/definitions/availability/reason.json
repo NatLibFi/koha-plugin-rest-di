@@ -212,9 +212,6 @@
       "properties": {
         "status": {
           "type": ["string", "null"]
-        },
-        "hold_queue_length": {
-          "type": ["integer", "null"]
         }
       }
     },

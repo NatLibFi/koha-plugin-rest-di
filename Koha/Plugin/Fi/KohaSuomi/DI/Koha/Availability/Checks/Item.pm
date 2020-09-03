@@ -177,12 +177,19 @@ sub held {
 
     my $item = $self->item;
     if (my ($s, $reserve) = C4::Reserves::CheckReserves($item->itemnumber)) {
-        if ($reserve && ($reserve->{'itemnumber'} == $item->itemnumber)) {
+        if (!$reserve) {
+            return;
+        } 
+        # We'll always consider waiting holds as held. Otherwise check for item-specific hold
+        # whether it can be checked out.
+        if ($s eq 'Waiting'
+            || ($reserve->{'itemnumber'} == $item->itemnumber 
+            && !C4::Context->preference("AllowItemsOnHoldCheckoutSIP") 
+            && !C4::Context->preference("AllowItemsOnHoldCheckoutSCO"))
+        ) {
             return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::Held->new(
                 borrowernumber => 0+$reserve->{'borrowernumber'},
-                status => $s,
-                hold_queue_length => 0+Koha::Holds->search({
-                    itemnumber => $item->itemnumber })->count,
+                status => $s
             );
         }
     }

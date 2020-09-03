@@ -34,7 +34,7 @@ use Exception::Class (
     'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::Held' => {
         isa =>  'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item',
         description => "Item held.",
-        fields => ["borrowernumber", "hold_queue_length", "status"],
+        fields => ["borrowernumber", "status"],
     },
     'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::HighHolds' => {
         isa =>  'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item',
