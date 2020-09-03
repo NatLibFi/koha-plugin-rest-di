@@ -23,6 +23,7 @@ use C4::Auth qw( haspermission );
 
 use Koha::Biblios;
 use Koha::Patron::Messages;
+use Koha::Patron::Modification;
 
 use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability;
 use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::Patron;
@@ -166,6 +167,71 @@ sub get {
             return $c->render( status => 500, openapi =>
                 { error => "Something went wrong, check the logs." });
         }
+    };
+}
+
+sub update {
+    my $c = shift->openapi->valid_input or return;
+
+    if (!C4::Context->preference('OPACPatronDetails')) {
+        return $c->render( 
+            status => 403,
+            openapi => { error => "Preferences do not allow changing patrons details"}
+        );
+    }
+
+    return try {
+        my $patron_id = $c->validation->param('patron_id');
+        my $patron = Koha::Patrons->find($patron_id);
+        return $c->render(status => 404, openapi => {error => "Patron not found"}) unless $patron;
+        my $body = $c->req->json;
+
+        my $verification = _parameters_require_modification_request($body);
+        if (keys %{$verification->{not_required}}) {
+            # Update changes
+            $patron->set_from_api($verification->{not_required})->store();
+            $patron->discard_changes();
+
+            unless (keys %{$verification->{required}}) {
+                return $c->render( status => 200, openapi => $patron );
+            }
+        }
+        if (keys %{$verification->{required}}) {
+            # Map from API field names
+            my $changes = {};
+            my $from_api_mapping = $patron->from_api_mapping;
+            while (my ($key, $value) = each %{ $verification->{required} } ) {
+                $changes->{$from_api_mapping->{$key} // $key} = $value;
+            }
+            $changes->{changed_fields} = join ',', keys %{$changes};
+            $changes->{borrowernumber} = $patron_id;
+            
+            Koha::Patron::Modifications->search({ borrowernumber => $patron_id })->delete;
+            Koha::Patron::Modification->new($changes)->store();
+
+            return $c->render(status => 202, openapi => {});
+        }
+    }
+    catch {
+        if ($_->isa('Koha::Exceptions::Patron::DuplicateObject')) {
+            return $c->render(status => 409, openapi => { error => $_->error, conflict => $_->conflict });
+        }
+        elsif ($_->isa('Koha::Exceptions::Library::BranchcodeNotFound')) {
+            return $c->render(status => 400, openapi => { error => "Library with branchcode \"".$_->branchcode."\" does not exist" });
+        }
+        elsif ($_->isa('Koha::Exceptions::Category::CategorycodeNotFound')) {
+            return $c->render(status => 400, openapi => {error => "Patron category \"".$_->categorycode."\" does not exist"});
+        }
+        elsif ($_->isa('Koha::Exceptions::MissingParameter')) {
+            return $c->render(status => 400, openapi => {error => "Missing mandatory parameter(s)", parameters => $_->parameter });
+        }
+        elsif ($_->isa('Koha::Exceptions::BadParameter')) {
+            return $c->render(status => 400, openapi => {error => "Invalid parameter(s)", parameters => $_->parameter });
+        }
+        elsif ($_->isa('Koha::Exceptions::NoChanges')) {
+            return $c->render(status => 204, openapi => {error => "No changes have been made"});
+        }
+        Koha::Exceptions::rethrow_exception($_);
     };
 }
 
@@ -507,6 +573,37 @@ sub validate_credentials {
     }
 
     return $c->render(status => 200, openapi => $patron->to_api);
+}
+
+# Takes a HASHref of parameters
+# Returns a HASHref that contains
+# 1. not_required HASHref
+#       - parameters that do not need librarian confirmation
+# 2. required HASHref
+#       - parameters that do need librarian confirmation
+sub _parameters_require_modification_request {
+    my ($body) = @_;
+
+    my $not_required = {
+        'privacy' => 1,
+        'sms_number' => 1,
+        'email' => 1,
+    };
+
+    my $params = {
+        not_required => {},
+        required     => {},
+    };
+    foreach my $param (keys %$body) {
+        if ($not_required->{$param}) {
+            $params->{not_required}->{$param} = $body->{$param};
+        }
+        else {
+            $params->{required}->{$param} = $body->{$param};
+        }
+    }
+
+    return $params;
 }
 
 1;

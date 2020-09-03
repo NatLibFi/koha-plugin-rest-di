@@ -533,6 +533,82 @@
           "borrowers": "1"
         }
       }
+    },
+    "patch": {
+      "x-mojo-to": "Fi::KohaSuomi::DI::PatronController#update",
+      "operationId": "updatePatronDI",
+      "tags": ["patrons"],
+      "parameters": [
+        {
+          "$ref": "openapi/parameters.json#/patron_id_pp"
+        },
+        {
+          "name": "body",
+          "in": "body",
+          "description": "A JSON object containing new information about existing patron",
+          "required": true,
+          "schema": {
+            "$ref": "openapi/definitions/patron.json"
+          }
+        }
+      ],
+      "consumes": ["application/json"],
+      "produces": ["application/json"],
+      "responses": {
+        "200": {
+          "description": "A successfully updated patron",
+          "schema": {
+            "type": "object"
+          }
+        },
+        "202": {
+          "description": "Accepted and waiting for librarian verification",
+          "schema": {
+            "type": "object"
+          }
+        },
+        "204": {
+          "description": "No Content",
+          "schema": {
+            "type": "object"
+          }
+        },
+        "400": {
+          "description": "Bad parameter",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "403": {
+          "description": "Access forbidden",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "404": {
+          "description": "Resource not found",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "409": {
+          "description": "Conflict in updating resource",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "500": {
+          "description": "Internal server error",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        }
+      },
+      "x-koha-authorization": {
+        "permissions": {
+          "borrowers": "1"
+        }
+      }
     }
   },
   "/patrons/{patron_id}/articlerequests": {
