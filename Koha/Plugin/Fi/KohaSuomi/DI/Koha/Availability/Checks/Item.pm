@@ -177,7 +177,7 @@ sub held {
 
     my $item = $self->item;
     if (my ($s, $reserve) = C4::Reserves::CheckReserves($item->itemnumber)) {
-        if ($reserve) {
+        if ($reserve && ($reserve->{'itemnumber'} == $item->itemnumber)) {
             return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::Held->new(
                 borrowernumber => 0+$reserve->{'borrowernumber'},
                 status => $s,
