@@ -91,6 +91,7 @@ sub biblio_hold {
     my $borrowernumber = $c->validation->param('patron_id');
     my $to_branch = $c->validation->param('library_id');
     my $query_pickup_locations = $c->validation->param('query_pickup_locations');
+    my $ignore_patron_holds = $c->validation->param('ignore_patron_holds');
     my $limit_items = $c->validation->param('limit_items');
 
     return try {
@@ -101,6 +102,7 @@ sub biblio_hold {
         };
 
         $params->{'query_pickup_locations'} = 1 if $query_pickup_locations;
+        $params->{'ignore_patron_holds'} = 1 if $ignore_patron_holds;
         $params->{'to_branch'} = $to_branch if $to_branch;
         $params->{'limit'} = $limit_items if $limit_items;
 

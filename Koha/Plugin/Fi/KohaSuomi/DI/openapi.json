@@ -116,6 +116,13 @@
           "type": "integer"
         },
         {
+          "name": "ignore_patron_holds",
+          "in": "query",
+          "description": "Ignore given patron's existing holds when calculating availability. 1 = yes, 0 or no parameter = no.",
+          "required": false,
+          "type": "integer"
+        },
+        {
           "name": "limit_items",
           "in": "query",
           "description": "Check only first n available items.",

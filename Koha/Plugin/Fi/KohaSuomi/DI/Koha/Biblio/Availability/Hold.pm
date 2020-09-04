@@ -77,6 +77,9 @@ sub new {
     # to generate a list of available pickup locations.
     # Don't provide the following parameter if you want to skip this step.
     $self->{'query_pickup_locations'} = $params->{'query_pickup_locations'};
+    # Optionally ignore existing holds for the given patron. Useful for 
+    # calculating possible pickup locations for updating an existing hold.
+    $self->{'ignore_patron_holds'} = $params->{'ignore_patron_holds'};
     # Additionally, consider any transfer limits to pickup library by
     # providing to_branch parameter with branchcode of pickup library
     $self->{'to_branch'} = $params->{'to_branch'};
@@ -150,15 +153,15 @@ sub _item_looper {
     # return biblio as available if no other unavailabilities are found. If you
     # want to calculate availability of every item in this biblio, do not give this
     # parameter.
-    my $limit = $self->limit ? $self->limit : $params->{'limit'};
+    my $limit = $self->{'limit'} ? $self->{'limit'} : $params->{'limit'};
     my $count = 0;
 
-    my @holds = Koha::Holds->search({
+    my @holds = $self->{'ignore_patron_holds'} ? () : Koha::Holds->search({
         biblionumber => $biblio->biblionumber,
         borrowernumber => $patron->borrowernumber,
     })->as_list if $patron;
 
-    my @nonfound_holds = Koha::Holds->search({
+    my @nonfound_holds = $self->{'ignore_patron_holds'} ? () : Koha::Holds->search({
         biblionumber => $biblio->biblionumber,
         found => undef,
         borrowernumber => $patron->borrowernumber,
