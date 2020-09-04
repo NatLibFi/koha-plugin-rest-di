@@ -484,24 +484,22 @@ sub list_checkouts {
             my $itype = $item_level_itypes && $checkout_ub->{'item_itype'}
                 ? $checkout_ub->{'item_itype'} : $checkout_ub->{'biblio_itype'};
             my $can_renew = 1;
-            my $max_renewals = 0;
             my $blocks = '';
             if ($patron_blocks) {
                 $can_renew = 0;
                 $blocks = $patron_blocks;
-            } else {
-                my $circ_rule = Koha::CirculationRules->get_effective_rule(
-                    {   
-                        rule_name    => 'renewalsallowed',
-                        categorycode => $patron->categorycode,
-                        itemtype     => $itype,
-                        branchcode   => $branchcode,
-                        ccode        => $checkout_ub->{'ccode'},
-                        permanent_location => $checkout_ub->{'permanent_location'}
-                    }
-                );
-                $max_renewals = ($circ_rule && $circ_rule->rule_value ne '') ? 0+$circ_rule->rule_value : undef;
-            }
+            } 
+            my $circ_rule = Koha::CirculationRules->get_effective_rule(
+                {   
+                    rule_name    => 'renewalsallowed',
+                    categorycode => $patron->categorycode,
+                    itemtype     => $itype,
+                    branchcode   => $branchcode,
+                    ccode        => $checkout_ub->{'ccode'},
+                    permanent_location => $checkout_ub->{'permanent_location'}
+                }
+            );
+            my $max_renewals = ($circ_rule && $circ_rule->rule_value ne '') ? 0+$circ_rule->rule_value : undef;
 
             my $result = $checkout->to_api;
             $result->{'biblio_id'} = $result->{'biblionumber'};
