@@ -98,7 +98,7 @@ sub _item_looper {
         return;
     }
 
-    my $hidelostitems = C4::Context->preference('hidelostitems');
+    my $opachiddenitems_rules = C4::Context->yaml_preference('OpacHiddenItems');
 
     # Stop calculating item availabilities after $limit available items are found.
     # E.g. parameter 'limit' with value 1 will find only one available item and
@@ -107,11 +107,10 @@ sub _item_looper {
     # parameter.
     my $limit = $params->{'limit'};
     my $avoid_queries_after = $params->{'MaxSearchResultsItemsPerRecordStatusCheck'}
-    ? C4::Context->preference('MaxSearchResultsItemsPerRecordStatusCheck') : undef;
+        ? C4::Context->preference('MaxSearchResultsItemsPerRecordStatusCheck') : undef;
     my $count = 0;
 
-    my @holds = Koha::Holds->search({
-        biblionumber => $self->biblio->biblionumber })->as_list;
+    my @holds = Koha::Holds->search({ biblionumber => $self->biblio->biblionumber })->as_list;
     $self->{'hold_queue_length'} = scalar(@holds) || 0;
 
     foreach my $item (@items) {
@@ -119,6 +118,8 @@ sub _item_looper {
         if (defined $limit && @{$self->{'item_availabilities'}} >= $limit) {
             last;
         }
+
+        next if ($item->hidden_in_opac({ rules => $opachiddenitems_rules }));
 
         my $item_availability = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Item::Availability::Search->new({
             item => $item,
@@ -139,12 +140,6 @@ sub _item_looper {
 
         $item_availability = $item_availability->in_opac($params);
         my $unavails = $item_availability->unavailabilities;
-        # Hide item in OPAC context if system preference hidelostitems is
-        # enabled.
-        my $lost = exists $unavails->{'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::Lost'};
-        if ($hidelostitems && $lost) {
-            next;
-        }
         if ($item_availability->available) {
             push @{$self->{'item_availabilities'}}, $item_availability;
         } else {

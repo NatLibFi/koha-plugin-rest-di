@@ -167,12 +167,18 @@ sub _item_looper {
         borrowernumber => $patron->borrowernumber,
     })->as_list if $patron;
     $self->{'hold_queue_length'} = scalar(@holds) || 0;
+
+    my $opachiddenitems_rules = C4::Context->yaml_preference('OpacHiddenItems');
+
     my $pickup_locations = {};
     foreach my $item (@items) {
         # Break out of loop after $limit items are found available
         if (defined $limit && @{$self->{'item_availabilities'}} >= $limit) {
             last;
         }
+
+        next if ($item->hidden_in_opac({ rules => $opachiddenitems_rules }));
+
         my $item_availability = $self->_item_check($item, $patron, \@holds, \@nonfound_holds);
         my $unavails = $item_availability->unavailabilities;
         if ($item_availability->available

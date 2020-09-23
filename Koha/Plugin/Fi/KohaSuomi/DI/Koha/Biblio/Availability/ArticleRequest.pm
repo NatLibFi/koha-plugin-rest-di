@@ -169,11 +169,16 @@ sub _item_looper {
     my $limit = $self->limit ? $self->limit : $params->{'limit'};
     my $count = 0;
 
+    my $opachiddenitems_rules = C4::Context->yaml_preference('OpacHiddenItems');
+
     foreach my $item (@items) {
         # Break out of loop after $limit items are found available
         if (defined $limit && @{$self->{'item_availabilities'}} >= $limit) {
             last;
         }
+
+        next if ($item->hidden_in_opac({ rules => $opachiddenitems_rules }));
+
         my $item_availability = $self->_item_check($item, $patron, $params->{'intranet'} ? 1 : 0);
         if ($item_availability->available) {
             push @{$self->{'item_availabilities'}}, $item_availability;
