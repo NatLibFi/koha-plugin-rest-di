@@ -1007,7 +1007,7 @@
   },
   "/patrons/{patron_id}/messaging_preferences": {
     "put": {
-      "x-mojo-to": "Fi::KohaSuomi::DI::PatronController::edit_messaging_preferences",
+      "x-mojo-to": "Fi::KohaSuomi::DI::PatronController#edit_messaging_preferences",
       "operationId": "editMessagingPreferencesDI",
       "description": "Modifies patron's messaging preferences. Please note that not all parameters defined in body object's documentation can actually be used for each message option due to dynamic configuration. Make a GET request for patron with query_messaging_preferences=1 first to see whether an option is configurable or if message transport type is available.",
       "x-koha-authorization": {
