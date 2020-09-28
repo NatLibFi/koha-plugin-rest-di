@@ -313,7 +313,11 @@ sub notforloan {
             category => 'NOT_LOAN',
             authorised_value => $item->notforloan
         });
-        my $code = $av->count ? $av->next->lib : '';
+        my $code = '';
+        if ($av->count) {
+            $av = $av->next;
+            $code = $av->lib_opac || $av->lib;
+        } 
         if ($item->notforloan > 0) {
             return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::NotForLoan->new(
                 status => 0+$item->notforloan,
