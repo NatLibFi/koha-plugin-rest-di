@@ -11,13 +11,7 @@ use Exception::Class (
         isa =>  'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::ItemType',
         description => "This type of items are not for loan.",
         fields => ["itemtype", "status", "code"],
-    },
-     'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::ItemType::NotFound' => {
-        isa =>  'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::ItemType',
-        description => "Item type not found",
-        fields => ['itemtype'],
-    },
-
+    }
 );
 
 1;

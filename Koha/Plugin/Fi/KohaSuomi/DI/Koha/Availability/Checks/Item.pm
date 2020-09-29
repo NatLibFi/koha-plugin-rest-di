@@ -309,15 +309,17 @@ sub notforloan {
     }
 
     if ($item->notforloan != 0 || $itemtype && $itemtype->notforloan != 0) {
-        my $av = Koha::AuthorisedValues->search({
-            category => 'NOT_LOAN',
-            authorised_value => $item->notforloan
-        });
         my $code = '';
-        if ($av->count) {
-            $av = $av->next;
-            $code = $av->lib_opac || $av->lib;
-        } 
+        if ($item->notforloan != 0) {
+            my $av = Koha::AuthorisedValues->search({
+                category => 'NOT_LOAN',
+                authorised_value => $item->notforloan
+            });
+            if ($av->count) {
+                $av = $av->next;
+                $code = $av->lib_opac || $av->lib;
+            } 
+        }
         if ($item->notforloan > 0) {
             return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::NotForLoan->new(
                 status => 0+$item->notforloan,
@@ -326,7 +328,7 @@ sub notforloan {
         } elsif ($itemtype && $itemtype->notforloan > 0) {
             return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::ItemType::NotForLoan->new(
                 status => 0+$itemtype->notforloan,
-                code => $code,
+                code => $itemtype->description,
                 itemtype => $itemtype->itemtype,
             );
         } elsif ($item->notforloan < 0) {
