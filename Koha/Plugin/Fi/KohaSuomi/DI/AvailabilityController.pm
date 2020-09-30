@@ -24,6 +24,7 @@ use C4::Auth qw( haspermission );
 use Koha::Biblios;
 
 use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::ArticleRequest;
+use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checkout;
 use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Hold;
 use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Search;
 
@@ -179,6 +180,49 @@ sub item_article_request {
             $availability = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::ArticleRequest->item($params);
     
             return $c->render(status => 200, openapi => $availability->in_opac->to_api);
+        }
+
+        return $c->render(
+            status  => 404,
+            openapi => {error => 'Item not found'}
+        );
+    }
+    catch {
+        if ($_->isa('Koha::Exceptions::AuthenticationRequired')) {
+            return $c->render(status => 401, openapi => { error => "Authentication required." });
+        }
+        elsif ($_->isa('Koha::Exceptions::NoPermission')) {
+            return $c->render(status => 403, openapi => {
+                error => "Authorization failure. Missing required permission(s).",
+                required_permissions => $_->required_permissions} );
+        }
+        Koha::Exceptions::rethrow_exception($_);
+    };
+}
+
+sub item_checkout {
+    my $c = shift->openapi->valid_input or return;
+
+    my $user = $c->stash('koha.user');
+    my $borrowernumber = $c->validation->param('patron_id');
+    my $to_branch = $c->validation->param('library_id');
+
+    return try {
+        my $patron = Koha::Patrons->find($borrowernumber);
+
+        my $itemnumber = $c->validation->output->{'item_id'};
+        my $params = {
+            patron => $patron,
+        };
+        if ($to_branch) {
+            $params->{'to_branch'} = $to_branch;
+        }
+        my $availability = undef;
+        if (my $item = Koha::Items->find($itemnumber)) {
+            $params->{'item'} = $item;
+            $availability = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checkout->item($params);
+
+            return $c->render(status => 200, openapi => $availability->in_intranet->to_api);
         }
 
         return $c->render(
