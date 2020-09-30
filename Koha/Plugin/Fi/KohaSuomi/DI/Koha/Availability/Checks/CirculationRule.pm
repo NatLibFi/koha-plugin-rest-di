@@ -113,12 +113,9 @@ sub maximum_checkouts_reached {
     return unless $patron ||= $self->patron;
     return unless $item ||= $self->item;
 
-    my $item_unblessed = $item->unblessed;
-    $item_unblessed->{'itemtype'} = $item->effective_itemtype;
     my $toomany = C4::Circulation::TooMany(
             $patron->unblessed,
-            $item->biblionumber,
-            $item_unblessed,
+            $item,
     );
 
     if ($toomany) {

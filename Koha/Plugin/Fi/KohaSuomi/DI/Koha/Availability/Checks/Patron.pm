@@ -88,9 +88,7 @@ Koha::Exceptions::Patron::Debt additional fields:
 sub debt_checkout {
     my ($self) = @_;
 
-    my ($amount) = C4::Members::GetMemberAccountRecords(
-                        $self->patron->borrowernumber
-    );
+    my ($amount) = $self->patron->account->balance;
     my $maxoutstanding = C4::Context->preference("noissuescharge");
     if (C4::Context->preference('AllFinesNeedOverride') && $amount > 0) {
         # All fines need override, so return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Patron::Debt.
