@@ -377,7 +377,7 @@ sub pickup_locations {
         my $limit_type = C4::Context->preference('BranchTransferLimitsType');
         my $limits = Koha::Item::Transfer::Limits->search({
             fromBranch  => $self->item->holdingbranch,
-            $limit_type => $self->item->branch_transfer_limit_code,
+            $limit_type => $limit_type eq 'itemtype' ? $self->item->effective_itemtype : $self->item->ccode
         })->unblessed;
 
         foreach my $library (@$pickup_libraries) {
