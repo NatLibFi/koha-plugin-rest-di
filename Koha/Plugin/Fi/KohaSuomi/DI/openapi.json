@@ -514,6 +514,240 @@
       }
     }
   },
+  "/courses": {
+    "get": {
+      "x-mojo-to": "Fi::KohaSuomi::DI::CourseReservesController#getCourses",
+      "operationId": "getCoursesDI",
+      "tags": ["course_reserves"],
+      "parameters": [
+        { "$ref": "openapi/parameters.json#/page" }, 
+        { "$ref": "openapi/parameters.json#/per_page" }, 
+        { "$ref": "openapi/parameters.json#/order_by" }
+      ],
+      "produces": [
+        "application/json"
+      ],
+      "responses": {
+        "200": {
+          "description": "Course information",
+          "schema": {
+            "type": "array",
+            "items": { "type": "object" }
+          }
+        },
+        "401": {
+          "description": "Authentication required",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "403": {
+          "description": "Access forbidden",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "500": {
+          "description": "Internal server error",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "503": {
+          "description": "Under maintenance",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        }
+      },
+      "x-koha-authorization": {
+        "permissions": {
+          "catalogue": "1"
+        }
+      }
+    }
+  },
+  "/departments": {
+    "get": {
+      "x-mojo-to": "Fi::KohaSuomi::DI::CourseReservesController#getDepartments",
+      "operationId": "getDepartmentsDI",
+      "tags": ["course_reserves"],
+      "parameters": [
+        { "$ref": "openapi/parameters.json#/page" }, 
+        { "$ref": "openapi/parameters.json#/per_page" }, 
+        { "$ref": "openapi/parameters.json#/order_by" }
+      ],
+      "produces": [
+        "application/json"
+      ],
+      "responses": {
+        "200": {
+          "description": "Department information",
+          "schema": {
+            "type": "array",
+            "items": { "type": "object" }
+          }
+        },
+        "401": {
+          "description": "Authentication required",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "403": {
+          "description": "Access forbidden",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "500": {
+          "description": "Internal server error",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "503": {
+          "description": "Under maintenance",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        }
+      },
+      "x-koha-authorization": {
+        "permissions": {
+          "catalogue": "1"
+        }
+      }
+    }
+  },
+  "/instructors": {
+    "get": {
+      "x-mojo-to": "Fi::KohaSuomi::DI::CourseReservesController#getInstructors",
+      "operationId": "getInstructorsDI",
+      "tags": ["course_reserves"],
+      "parameters": [
+        { "$ref": "openapi/parameters.json#/page" }, 
+        { "$ref": "openapi/parameters.json#/per_page" }, 
+        { "$ref": "openapi/parameters.json#/order_by" }
+      ],
+      "produces": [
+        "application/json"
+      ],
+      "responses": {
+        "200": {
+          "description": "Instructor information",
+          "schema": {
+            "type": "array",
+            "items": { "type": "object" }
+          }
+        },
+        "401": {
+          "description": "Authentication required",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "403": {
+          "description": "Access forbidden",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "500": {
+          "description": "Internal server error",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "503": {
+          "description": "Under maintenance",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        }
+      },
+      "x-koha-authorization": {
+        "permissions": {
+          "catalogue": "1"
+        }
+      }
+    }
+  },
+  "/coursereserves": {
+    "get": {
+      "x-mojo-to": "Fi::KohaSuomi::DI::CourseReservesController#getCourseReserves",
+      "operationId": "getCourseReservesDI",
+      "tags": ["course_reserves"],
+      "parameters": [
+        {
+          "name": "course_id",
+          "in": "query",
+          "description": "Limit results to the given course.",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "name": "department",
+          "in": "query",
+          "description": "Limit results to the given department (authorised value).",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "name": "patron_id",
+          "in": "query",
+          "description": "Limit results to the given instructor (patron).",
+          "required": false,
+          "type": "integer"
+        },
+        { "$ref": "openapi/parameters.json#/page" }, 
+        { "$ref": "openapi/parameters.json#/per_page" }, 
+        { "$ref": "openapi/parameters.json#/order_by" }
+      ],
+      "produces": [
+        "application/json"
+      ],
+      "responses": {
+        "200": {
+          "description": "Course information",
+          "schema": {
+            "type": "array",
+            "items": { "type": "object" }
+          }
+        },
+        "401": {
+          "description": "Authentication required",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "403": {
+          "description": "Access forbidden",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "500": {
+          "description": "Internal server error",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "503": {
+          "description": "Under maintenance",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        }
+      },
+      "x-koha-authorization": {
+        "permissions": {
+          "catalogue": "1"
+        }
+      }
+    }
+  },
+
   "/patrons/{patron_id}": {
     "get": {
       "x-mojo-to": "Fi::KohaSuomi::DI::PatronController#get",
