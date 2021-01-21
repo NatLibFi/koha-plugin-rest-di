@@ -89,6 +89,7 @@ sub get_options {
     while (my $transport = $transports->next) {
         # KD-3952 Quick fix until we get the letter template checking in place, for now just follow suomifi system preference
         next if $transport->get_column('message_transport_type') eq 'suomifi' && ! C4::Context->preference('SuomiFiMessaging'); 
+        next if $transport->get_column('message_transport_type') eq 'itiva' && ! C4::Context->preference('TalkingTechItivaPhoneNotification');
         my $name = $transport->get_column('message_name');
         $choices->{$name}->{'message_attribute_id'} = $transport->message_attribute_id;
         $choices->{$name}->{'message_name'}         = $name;
