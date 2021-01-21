@@ -90,6 +90,7 @@ sub get_options {
         # KD-3952 Quick fix until we get the letter template checking in place, for now just follow suomifi system preference
         next if $transport->get_column('message_transport_type') eq 'suomifi' && ! C4::Context->preference('SuomiFiMessaging'); 
         my $name = $transport->get_column('message_name');
+        next if $name =~ m/^Ill_/ && ! C4::Context->preference('ILLModule');
         $choices->{$name}->{'message_attribute_id'} = $transport->message_attribute_id;
         $choices->{$name}->{'message_name'}         = $name;
         $choices->{$name}->{'takes_days'}           = $transport->get_column('takes_days');
@@ -138,6 +139,7 @@ sub TO_JSON {
     my $preferences = {};
     my $options = $self->get_options;
     foreach my $preference ($self->as_list) {
+        next if $preference->message_name =~ m/^Ill_/ && ! C4::Context->preference('ILLModule');
         $preferences->{$preference->message_name} = $preference->TO_JSON({
             options => $options
         });
