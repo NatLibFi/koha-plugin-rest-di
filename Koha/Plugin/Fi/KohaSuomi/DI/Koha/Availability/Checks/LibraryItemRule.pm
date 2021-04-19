@@ -86,7 +86,7 @@ sub hold_not_allowed_by_library {
 
     return unless my $rule = $self->branchitemrule;
 
-    if (!$rule->{holdallowed}) {
+    if ($rule->{holdallowed} =~ m/^(0|not_allowed)$/) { # 0 means not_allowed in older Koha versions
         return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Hold::NotAllowedByLibrary->new
     }
     return;
@@ -109,7 +109,7 @@ sub hold_not_allowed_by_other_library {
     my $independentBranch = C4::Context->preference('IndependentBranches');
 
     my $patron = $self->patron;
-    if ($rule->{holdallowed} == 1) {
+    if ($rule->{holdallowed} =~ m/^(1|from_home_library)$/) { # 1 means from_home_library in older Koha versions
         if (!$patron) {
             # Since we don't know who is asking for item and from which
             # library, return NotAllowedFromOtherLibraries, but it should
