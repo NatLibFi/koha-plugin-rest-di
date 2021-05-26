@@ -83,7 +83,9 @@ sub get {
                 $api_record->{firstname} = $guarantor_record->firstname;
                 push @guarantors, $api_record;
             }
-            my $relationship = $patron->relationship;
+
+            # We need to check if relationship column exists, it was dropped in bug 26995
+            my $relationship = exists $ret->{'relationship_type'} ? $patron->relationship : undef;
             if ($relationship && $patron->contactname) {
                 my $api_record;
                 $api_record->{'relationship'} = $relationship;
