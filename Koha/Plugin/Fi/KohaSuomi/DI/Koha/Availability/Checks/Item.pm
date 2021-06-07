@@ -27,6 +27,7 @@ use C4::Context;
 use C4::Reserves;
 
 use Koha::AuthorisedValues;
+use Koha::Database;
 use Koha::DateUtils;
 use Koha::Holds;
 use Koha::ItemTypes;
@@ -427,10 +428,12 @@ Koha::Exceptions::Item::Transfer additional fields:
 sub transfer {
     my ($self) = @_;
 
+    my $is_cancellable = Koha::Database->new()->schema()->resultset('Branchtransfer')->result_source->has_column('datecancelled');
     my $transfer = Koha::Item::Transfers->search({
         itemnumber => $self->item->itemnumber,
         datesent => { '!=', undef },
         datearrived => undef,
+        ( $is_cancellable ? ( datecancelled => undef ) : () ),
     })->next;
     if ($transfer) {
         return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::Transfer->new(
