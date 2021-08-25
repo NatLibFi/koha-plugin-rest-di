@@ -50,6 +50,7 @@ jobs:
         release-version: ${{ steps.myvars.outputs.tag_version }}
         release-name: ${{ steps.myvars.outputs.github_repo }}
         minimum-version: ${{ steps.koha-version-oldstable.outputs.version-major-minor }}
+        plugin-module: "./Koha/Plugin/Fi/KohaSuomi/DI.pm"
 
     - name: See if kpz was created
       run: |
