@@ -1,0 +1,67 @@
+# Based on https://raw.githubusercontent.com/bywatersolutions/koha-plugin-kitchen-sink/master/.github/workflows/main.yml
+name: Release
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+jobs:
+  release:
+    name: Build & Release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    strategy:
+      fail-fast: false
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Parse out and store the GitHub repository name
+      id: myvars
+      run: |
+        IFS='/' read -r -a parts <<< "$GITHUB_REPOSITORY"
+        GITHUB_REPO="${parts[1]}"
+        echo ::set-output name=github_repo::$GITHUB_REPO
+        echo "GITHUB REPO: $GITHUB_REPO"
+
+        TAG_VERSION="${GITHUB_REF##*/}"
+        echo "TAG VERSION: $TAG_VERSION"
+        TAG_VERSION="${TAG_VERSION:1}"
+        echo "TAG VERSION 2: $TAG_VERSION"
+        echo ::set-output name=tag_version::$TAG_VERSION
+
+    - name: Get Koha Version Branch Name
+      id: koha-version-oldstable
+      uses: "bywatersolutions/github-action-koha-get-version-by-label@master"
+      with:
+        version-label: "oldstable"
+
+    - name: Print minimum version
+      run: |
+        echo "Current oldstable version: ${{ steps.koha-version-oldstable.outputs.version-major-minor }}"
+
+    - name: Dump myvars outputs
+      env:
+        GITHUB_CONTEXT: ${{ toJson(steps.myvars.outputs) }}
+      run: echo "$GITHUB_CONTEXT"
+
+    - name: Build Koha Plugin kpz artifact
+      id: kpz
+      uses: "bywatersolutions/github-action-koha-plugin-create-kpz@master"
+      with:
+        release-version: ${{ steps.myvars.outputs.tag_version }}
+        release-name: ${{ steps.myvars.outputs.github_repo }}
+        minimum-version: ${{ steps.koha-version-oldstable.outputs.version-major-minor }}
+
+    - name: See if kpz was created
+      run: |
+        echo "FILENAME: ${{ steps.kpz.outputs.filename }}"
+        ls -alh
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: |
+          ${{ steps.kpz.outputs.filename }}
+          CHANGELOG.md
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
