@@ -92,6 +92,7 @@ sub get_options {
         next if $transport->get_column('message_transport_type') eq 'itiva' && ! C4::Context->preference('TalkingTechItivaPhoneNotification');
         my $name = $transport->get_column('message_name');
         next if $name =~ m/^Ill_/ && ! C4::Context->preference('ILLModule');
+        next if $name eq 'Auto_Renewals' && C4::Context->preference('AutoRenewalNotices') ne 'preferences';
         $choices->{$name}->{'message_attribute_id'} = $transport->message_attribute_id;
         $choices->{$name}->{'message_name'}         = $name;
         $choices->{$name}->{'takes_days'}           = $transport->get_column('takes_days');
