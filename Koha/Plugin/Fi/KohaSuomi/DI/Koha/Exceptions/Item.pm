@@ -73,7 +73,11 @@ use Exception::Class (
     'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::PickupLocations' => {
         isa => 'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item',
         description => "Item can only be transferred to following libraries",
-        fields => ["from_library", "to_libraries"],
+        fields => ["from_library", "to_libraries", "filtered"],
+    },
+    'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::NoPickUpLocations' => {
+        isa =>  'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item',
+        description => "Item does not have valid pick up locations."
     },
     'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::UnknownBarcode' => {
         isa =>  'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item',

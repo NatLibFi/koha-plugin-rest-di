@@ -87,6 +87,8 @@ sub new {
     # in parameter 'limit'.
     $self->{'limit'} = $params->{'limit'};
 
+    $self->{'context_cache'} = {};
+
     return $self;
 }
 
@@ -211,7 +213,7 @@ sub _item_looper {
 }
 
 sub _item_check {
-    my ($self, $item, $patron, $holds, $nonfound_holds) = @_;
+    my ($self, $item, $patron, $holds, $nonfound_holds, $context_cache) = @_;
 
     my $item_availability = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Item::Availability::Hold->new({
         item => $item,
@@ -226,7 +228,7 @@ sub _item_check {
         use_cache => 1,
         nonfound_holds => $nonfound_holds
     });
-    $item_availability->common_item_checks({ holds => $holds });
+    $item_availability->common_item_checks({ holds => $holds, context_cache => $self->{'context_cache'} });
     $item_availability->common_library_item_rule_checks;
     $item_availability->opac_specific_issuing_rule_checks;
     return $item_availability;

@@ -364,16 +364,20 @@ sub onloan {
 
 Gets list of available pickup locations for item hold.
 
+$context_cache is a hash ref used to store data between calls to avoid repeated checks.
+
 Returns Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::PickupLocations.
 
 =cut
 
 sub pickup_locations {
-    my ($self) = @_;
+    my ($self, $patron, $context_cache) = @_;
 
     my $pickup_libraries = Koha::Libraries->search({
         pickup_location => 1 })->unblessed;
     my $pickup_locations = [];
+    my $filtered = Mojo::JSON->false;
+
     if (C4::Context->preference('UseBranchTransferLimits')) {
         my $limit_type = C4::Context->preference('BranchTransferLimitsType');
         my $limits = Koha::Item::Transfer::Limits->search({
@@ -382,13 +386,21 @@ sub pickup_locations {
         })->unblessed;
 
         foreach my $library (@$pickup_libraries) {
-            if (!grep { $library->{branchcode} eq $_->{toBranch} } @$limits) {
+            if (!grep { $library->{branchcode} eq $_->{toBranch} } @$limits
+                && $self->_pickup_location_allowed($library->{branchcode}, $patron, $context_cache)
+            ) {
                 push @{$pickup_locations}, $library->{branchcode};
+            } else {
+                $filtered = Mojo::JSON->true;
             }
         }
     } else {
         foreach my $library (@$pickup_libraries) {
-            push @{$pickup_locations}, $library->{branchcode};
+            if ($self->_pickup_location_allowed($library->{branchcode}, $patron, $context_cache)) {
+                push @{$pickup_locations}, $library->{branchcode};
+            } else {
+                $filtered = Mojo::JSON->true;
+            }
         }
     }
 
@@ -396,6 +408,7 @@ sub pickup_locations {
     return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::PickupLocations->new(
         from_library => $self->item->holdingbranch,
         to_libraries => $pickup_locations,
+        filtered => $filtered
     );
 }
 
@@ -518,5 +531,46 @@ sub withdrawn {
     }
     return;
 }
+
+=head3 _pickup_library_allowed
+
+  if ($self->_pickup_location_allowed($location, $patron, $context_cache))...
+
+Checks if pickup location is allowed. $context_cache is a hash ref used to store data between calls to avoid repeated checks.
+
+=cut
+
+sub _pickup_location_allowed {
+    my ($self, $location, $patron, $context_cache) = @_;
+
+    if (!defined $context_cache->{can_place_hold_if_available_at_pickup}) {
+        my $can_place = C4::Context->preference('OPACHoldsIfAvailableAtPickup');
+        unless ($can_place || !$patron) {
+            my @patron_categories = split ',', C4::Context->preference('OPACHoldsIfAvailableAtPickupExceptions');
+            if (@patron_categories) {
+                my $categorycode = $patron->categorycode;
+                $can_place = grep { $_ eq $categorycode } @patron_categories;
+            }
+        }
+        $context_cache->{can_place_hold_if_available_at_pickup} = $can_place;
+    }
+    return 1 if $context_cache->{can_place_hold_if_available_at_pickup};
+
+    # Filter out pickup locations with available items
+    if (!defined $context_cache->{items_available_by_location}->{$location}) {
+        $context_cache->{items_available_by_location}->{$location} = Koha::Items->search(
+            {
+                'me.biblionumber' => $self->item->biblionumber,
+                'me.holdingbranch' => $location,
+                'me.itemlost' => 0,
+                'me.damaged' => 0,
+                'issue.itemnumber' => undef
+            },
+            { join => 'issue' }
+        )->count;
+    }
+    return $context_cache->{items_available_by_location}->{$location} ? 0 : 1;
+}
+
 
 1;

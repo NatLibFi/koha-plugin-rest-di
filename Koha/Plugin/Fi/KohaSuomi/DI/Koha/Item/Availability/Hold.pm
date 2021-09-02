@@ -111,7 +111,8 @@ sub in_opac {
     $self->common_biblio_checks;
     $self->common_biblioitem_checks;
     $self->common_issuing_rule_checks;
-    $self->common_item_checks;
+    my $cache = {};
+    $self->common_item_checks({'context_cache' => $cache});
     $self->common_library_item_rule_checks;
     $self->common_patron_checks;
     $self->opac_specific_issuing_rule_checks;
@@ -237,20 +238,31 @@ sub common_item_checks {
     }
 
     $self->unavailable($reason) if $reason = $itemcalc->from_another_library;
-    if ($self->{'query_pickup_locations'} && ($reason = $itemcalc->pickup_locations)) {
-        if (@{$reason->to_libraries} == 0) {
-            $self->unavailable(Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::CannotBeTransferred->new(
-                from_library => $item->holdingbranch
-            ));
-        }
-        $self->note($reason);
-    }
     if ($self->to_branch && ($reason = $itemcalc->transfer_limit($self->to_branch))) {
         $self->unavailable($reason);
     }
+    if ($self->patron) {
+        $self->unavailable($reason) if $reason = $itemcalc->held_by_patron($patron, $params);
+    }
 
-    return $self unless $self->patron;
-    $self->unavailable($reason) if $reason = $itemcalc->held_by_patron($patron, $params);
+    if ($self->{'query_pickup_locations'}) {
+        die('Context cache not provided') unless defined $params->{context_cache};
+        if ($reason = $itemcalc->pickup_locations($patron, $params->{context_cache})) {
+            if (@{$reason->to_libraries} == 0) {
+                if (@{$reason->filtered}) {
+                    $self->unavailable(Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::NoPickUpLocations->new(
+                        from_library => $item->holdingbranch
+                    ));
+                } else {
+                    $self->unavailable(Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::CannotBeTransferred->new(
+                        from_library => $item->holdingbranch
+                    ));
+                }
+            }
+
+            $self->note($reason);
+        }
+    }
 
     return $self;
 }
