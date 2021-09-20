@@ -167,9 +167,8 @@ sub from_another_library {
 Returns Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::Held item is held.
 
 Koha::Exceptions::Item::Held additional fields:
-  borrowernumber              # item's library (according to HomeOrHoldingBranch)
-  status                      # the library of logged-in user
-  hold_queue_length           # hold queue length for the item
+  borrowernumber              # patron with the hold
+  status                      # hold status
 
 =cut
 
@@ -180,12 +179,15 @@ sub held {
     if (my ($s, $reserve) = C4::Reserves::CheckReserves($item->itemnumber)) {
         if (!$reserve) {
             return;
-        } 
-        # We'll always consider waiting holds as held. Otherwise check for item-specific hold
-        # whether it can be checked out.
-        if ($s eq 'Waiting'
-            || ($reserve->{'itemnumber'} == $item->itemnumber 
-            && !C4::Context->preference("AllowItemsOnHoldCheckoutSIP") 
+        }
+        # Always consider holds in the following states as held:
+        # 'Waiting' - Hold is available for pickup
+        # 'Processing' - Hold is being processed after returning with SIP
+        #                (controlled by HoldsNeedProcessingSIP preference)
+        # Otherwise check for item-specific hold and whether it can be checked out.
+        if ($s eq 'Waiting' || $s eq 'Processing'
+            || ($reserve->{'itemnumber'} == $item->itemnumber
+            && !C4::Context->preference("AllowItemsOnHoldCheckoutSIP")
             && !C4::Context->preference("AllowItemsOnHoldCheckoutSCO"))
         ) {
             return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::Held->new(
