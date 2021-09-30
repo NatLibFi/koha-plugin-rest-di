@@ -388,7 +388,7 @@ sub pickup_locations {
         })->unblessed;
 
         foreach my $library (@$pickup_libraries) {
-            if (!grep { $library->{branchcode} eq $_->{toBranch} } @$limits
+            if (!(grep { $library->{branchcode} eq $_->{toBranch} } @$limits)
                 && $self->_pickup_location_allowed($library->{branchcode}, $patron, $context_cache)
             ) {
                 push @{$pickup_locations}, $library->{branchcode};
