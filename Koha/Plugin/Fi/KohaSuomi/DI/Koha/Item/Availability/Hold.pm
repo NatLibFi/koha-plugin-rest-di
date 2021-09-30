@@ -249,10 +249,8 @@ sub common_item_checks {
         die('Context cache not provided') unless defined $params->{context_cache};
         if ($reason = $itemcalc->pickup_locations($patron, $params->{context_cache})) {
             if (@{$reason->to_libraries} == 0) {
-                if (@{$reason->filtered}) {
-                    $self->unavailable(Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::NoPickUpLocations->new(
-                        from_library => $item->holdingbranch
-                    ));
+                if ($reason->filtered == Mojo::JSON->true) {
+                    $self->unavailable(Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::NoPickUpLocations->new());
                 } else {
                     $self->unavailable(Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::CannotBeTransferred->new(
                         from_library => $item->holdingbranch
