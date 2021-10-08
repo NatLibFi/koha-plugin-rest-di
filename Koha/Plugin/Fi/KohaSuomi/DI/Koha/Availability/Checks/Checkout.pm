@@ -25,7 +25,7 @@ use base qw(Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks);
 use C4::Circulation;
 use C4::Context;
 
-use Koha::DateUtils;
+use Koha::DateUtils qw( dt_from_string );
 use Koha::Items;
 
 use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Biblio;

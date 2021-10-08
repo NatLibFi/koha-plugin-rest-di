@@ -20,7 +20,7 @@ package Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability;
 
 use Modern::Perl;
 
-use Koha::DateUtils;
+use Koha::DateUtils qw( dt_from_string );
 
 use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions;
 
