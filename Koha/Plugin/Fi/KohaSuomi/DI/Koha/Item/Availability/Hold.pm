@@ -103,7 +103,8 @@ sub in_opac {
     my $patron = $self->patron;
 
     # Check if holds are allowed in OPAC
-    if (!C4::Context->preference('RequestOnOpac')) {
+    # Since Koha 21.11 'RequestOnOpac' becomes 'OPACHoldRequests' (Bug 29180)
+    if ( !C4::Context->preference('RequestOnOpac') and !C4::Context->preference('OPACHoldRequests') ) {
         $self->unavailable(Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Hold::NotAllowedInOPAC->new);
         return $self;
     }
