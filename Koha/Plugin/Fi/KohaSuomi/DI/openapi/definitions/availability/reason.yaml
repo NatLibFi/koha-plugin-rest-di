@@ -1,0 +1,362 @@
+---
+description: An object that contains either none or multiple reasons defined in this object's specification.
+properties:
+  Biblio::CheckedOut:
+    description: Patron has already checked out an item from this biblio. A confirmation may be required.
+    properties:
+      biblio_id:
+        $ref: ../../x-primitives.yaml#/biblio_id
+    type: object
+  Biblio::NoAvailableItems:
+    description: This biblio has no available items.
+    properties: {}
+    type: object
+  Checkout::DueDateBeforeNow:
+    description: Given due date is in the past.
+    properties:
+      duedate:
+        format: date-time
+        type:
+          - string
+          - "null"
+      now:
+        format: date-time
+        type:
+          - string
+          - "null"
+    type: object
+  Checkout::Fee:
+    description: Checkout fee will apply.
+    properties:
+      amount:
+        description: Amount of rental charge.
+        type:
+          - number
+          - "null"
+    type: object
+  Checkout::InvalidDueDate:
+    description: Given due date is invalid.
+    properties:
+      duedate:
+        type:
+          - string
+          - "null"
+    type: object
+  Checkout::MaximumCheckoutsReached:
+    description: Maximum number of checkouts have been reached.
+    properties:
+      current_checkout_count:
+        description: Current checkout count for patron.
+        type:
+          - integer
+          - "null"
+      max_checkouts_allowed:
+        description: Maximum number of checkouts allowed.
+        type:
+          - integer
+          - "null"
+    type: object
+  Checkout::MaximumOnsiteCheckoutsReached:
+    description: Maximum number of on-site checkouts have been reached.
+    properties:
+      current_onsite_checkouts:
+        description: Current onsite checkout count for patron.
+        type:
+          - integer
+          - "null"
+      max_onsite_checkouts:
+        description: Maximum number of onsite checkouts allowed.
+        type:
+          - integer
+          - "null"
+    type: object
+  Checkout::NoMoreRenewalForOnsiteCheckouts:
+    description: No more on-site renewals allowed.
+    properties: {}
+    type: object
+  Checkout::NoMoreRenewals:
+    description: No more renewals allowed.
+    properties: {}
+    type: object
+  Checkout::OnsiteCheckoutsDisabled:
+    description: On-site checkouts are disabled.
+    properties: {}
+    type: object
+  Checkout::Renew:
+    description: Checkout will be renewed.
+    properties: {}
+    type: object
+  Checkout::ZeroCheckoutsAllowed:
+    description: Allowed number of checkouts is zero.
+    properties: {}
+    type: object
+  Hold::ItemLevelHoldNotAllowed:
+    description: Item-level holds are not allowed.
+    properties: {}
+    type: object
+  Hold::MaximumHoldsForRecordReached:
+    description: Maximum number of holds for this record have been reached.
+    properties:
+      current_hold_count:
+        type:
+          - integer
+          - "null"
+      max_holds_allowed:
+        type:
+          - integer
+          - "null"
+    type: object
+  Hold::MaximumHoldsReached:
+    description: Maximum number of holds have been reached.
+    properties:
+      current_hold_count:
+        type:
+          - integer
+          - "null"
+      max_holds_allowed:
+        type:
+          - integer
+          - "null"
+    type: object
+  Hold::NotAllowedByLibrary:
+    description: Library does not allow holds to be placed.
+    properties: {}
+    type: object
+  Hold::NotAllowedFromOtherLibraries:
+    description: Holds are not allowed from other libraries.
+    properties: {}
+    type: object
+  Hold::NotAllowedInOPAC:
+    description: Patron cannot place a hold by themselves in OPAC.
+    properties: {}
+    type: object
+  Hold::OnShelfNotAllowed:
+    description: On-shelf holds are not allowed.
+    properties: {}
+    type: object
+  Hold::ZeroHoldsAllowed:
+    description: Allowed number of holds is zero.
+    properties: {}
+    type: object
+  Item::AlreadyHeldForThisPatron:
+    description: Item is held for this patron.
+    properties: {}
+    type: object
+  Item::CannotBeTransferred:
+    description: Item cannot be transferred.
+    properties:
+      from_library_id:
+        $ref: ../../x-primitives.yaml#/library_id
+      to_library_id:
+        $ref: ../../x-primitives.yaml#/library_id
+    type: object
+  Item::CheckedOut:
+    description: Item is checked out to a patron.
+    properties:
+      due_date:
+        format: date-time
+        type:
+          - string
+          - "null"
+    type: object
+  Item::Damaged:
+    description: Item is marked as damaged
+    properties:
+      code:
+        description: Status description (e.g. Damaged)
+        type:
+          - string
+          - "null"
+      status:
+        description: Item's damaged status number
+        type:
+          - integer
+          - "null"
+    type: object
+  Item::FromAnotherLibrary:
+    description: Libraries are independent and this item is from another library than current patron.
+    properties:
+      item_library_id:
+        $ref: ../../x-primitives.yaml#/library_id
+    type: object
+  Item::Held:
+    description: Someone has placed a hold on this item.
+    properties:
+      status:
+        type:
+          - string
+          - "null"
+    type: object
+  Item::HighHolds:
+    description: Loan period shortened for high held item.
+    properties:
+      duration:
+        type:
+          - string
+          - "null"
+      num_holds:
+        type:
+          - integer
+          - "null"
+      returndate:
+        format: date-time
+        type:
+          - string
+          - "null"
+    type: object
+  Item::Lost:
+    description: Item is marked as lost.
+    properties:
+      code:
+        description: Status description (e.g. Missing)
+        type:
+          - string
+          - "null"
+      status:
+        description: Item's lost status number
+        type:
+          - integer
+          - "null"
+    type: object
+  Item::NotForLoan:
+    description: Item is not for loan.
+    properties:
+      code:
+        description: Status description (e.g. Ordered)
+        type:
+          - string
+          - "null"
+      status:
+        description: Item's notforloan status number
+        type:
+          - integer
+          - "null"
+    type: object
+  Item::Restricted:
+    description: Item is restricted.
+    properties: {}
+    type: object
+  Item::Transfer:
+    description: Item is being transferred.
+    properties:
+      datesent:
+        description: Start date of transfer
+        format: date-time
+        type:
+          - string
+          - "null"
+      from_library_id:
+        $ref: ../../x-primitives.yaml#/library_id
+      to_library_id:
+        $ref: ../../x-primitives.yaml#/library_id
+    type: object
+  Item::UnknownBarcode:
+    description: This item has either an unknown barcode or no barcode at all.
+    properties:
+      barcode:
+        type:
+          - string
+          - "null"
+    type: object
+  Item::Withdrawn:
+    description: Item is withdrawn.
+    properties: {}
+    type: object
+  ItemType::NotForLoan:
+    description: Item type is not for loan.
+    properties:
+      code:
+        description: Status description (e.g. Ordered)
+        type:
+          - string
+          - "null"
+      itemtype:
+        description: Item type
+        type:
+          - string
+          - "null"
+      status:
+        description: Item's notforloan status number
+        type:
+          - integer
+          - "null"
+    type: object
+  Patron::AgeRestricted:
+    description: An age restriction applies for this patron.
+    properties:
+      age_restriction:
+        description: 'Age restriction, e.g. PEGI 16'
+        type:
+          - string
+          - "null"
+    type: object
+  Patron::CardExpired:
+    description: Patron's card has been expired.
+    properties:
+      expiration_date:
+        format: date
+        type:
+          - string
+          - "null"
+    type: object
+  Patron::CardLost:
+    description: Patron's card has been marked as lost.
+    properties: {}
+    type: object
+  Patron::Debarred:
+    description: Patron is debarred.
+    properties:
+      comment:
+        type:
+          - string
+          - "null"
+      expiration_date:
+        format: date
+        type:
+          - string
+          - "null"
+    type: object
+  Patron::DebarredOverdue:
+    description: Patron has overdues and is debarred.
+    properties:
+      number_of_overdues:
+        type:
+          - integer
+          - "null"
+    type: object
+  Patron::Debt:
+    description: Patron's debts exceed maximum allowed amount.
+    properties:
+      current_outstanding:
+        type:
+          - number
+          - "null"
+      max_outstanding:
+        type:
+          - number
+          - "null"
+    type: object
+  Patron::DebtGuarantees:
+    description: Patron's guarantees' debts exceed maximum allowed amount.
+    properties:
+      current_outstanding:
+        type:
+          - number
+          - "null"
+      max_outstanding:
+        type:
+          - number
+          - "null"
+    type: object
+  Patron::FromAnotherLibrary:
+    description: Libraries are independent and patron is from another library than current logged in user.
+    properties:
+      current_library_id:
+        $ref: ../../x-primitives.yaml#/library_id
+      patron_library_id:
+        $ref: ../../x-primitives.yaml#/library_id
+    type: object
+  Patron::GoneNoAddress:
+    properties: {}
+    type: object
+type: object

@@ -19,8 +19,6 @@ use Modern::Perl;
 
 use base qw(Koha::Plugins::Base);
 
-use Mojo::JSON qw(decode_json);
-
 our $VERSION = "{VERSION}";
 
 our $metadata = {
@@ -28,7 +26,7 @@ our $metadata = {
     author          => 'Koha-Suomi and The National Library of Finland',
     date_authored   => '2020-06-03',
     date_updated    => '1900-01-01',
-    minimum_version => '20.05.00.000',
+    minimum_version => '21.12.00.020',
     maximum_version => undef,
     version         => $VERSION,
     description     => 'This plugin implements API endpoints required'
@@ -55,13 +53,49 @@ sub api_routes {
     my ( $self, $args ) = @_;
 
     my $spec_dir = $self->mbf_dir();
-    return JSON::Validator->new->schema($spec_dir . "/openapi.json")->schema->{data};
+
+    my $schema = JSON::Validator::Schema::OpenAPIv2->new;
+    my $spec = $schema->resolve($spec_dir . '/openapi.yaml');
+
+    return $self->_convert_refs_to_absolute($spec->data->{'paths'}, 'file://' . $spec_dir . '/');
 }
 
 sub api_namespace {
     my ( $self ) = @_;
-    
+
     return 'kohasuomi';
+}
+
+sub _convert_refs_to_absolute {
+    my ( $self, $hashref, $path_prefix ) = @_;
+
+    foreach my $key (keys %{ $hashref }) {
+        if ($key eq '$ref') {
+            if ($hashref->{$key} =~ /^(\.\/)?openapi/) {
+                $hashref->{$key} = $path_prefix . $hashref->{$key};
+            }
+        } elsif (ref $hashref->{$key} eq 'HASH' ) {
+            $hashref->{$key} = $self->_convert_refs_to_absolute($hashref->{$key}, $path_prefix);
+        } elsif (ref($hashref->{$key}) eq 'ARRAY') {
+            $hashref->{$key} = $self->_convert_array_refs_to_absolute($hashref->{$key}, $path_prefix);
+        }
+    }
+    return $hashref;
+}
+
+sub _convert_array_refs_to_absolute {
+    my ( $self, $arrayref, $path_prefix ) = @_;
+
+    my @res;
+    foreach my $item (@{ $arrayref }) {
+        if (ref($item) eq 'HASH') {
+            $item = $self->_convert_refs_to_absolute($item, $path_prefix);
+        } elsif (ref($item) eq 'ARRAY') {
+            $item = $self->_convert_array_refs_to_absolute($item, $path_prefix);
+        }
+        push @res, $item;
+    }
+    return \@res;
 }
 
 1;

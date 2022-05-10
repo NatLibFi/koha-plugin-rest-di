@@ -5,17 +5,17 @@ use Modern::Perl;
 use Exception::Class (
 
     'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::BadParameter' => {
-        isa => 'Koha::Exceptions::Exception',
+        isa => 'Koha::Exception',
         description => 'A bad parameter was given',
         fields => ['parameter'],
     },
     'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::MissingParameter' => {
-        isa => 'Koha::Exceptions::Exception',
+        isa => 'Koha::Exception',
         description => 'A required parameter is missing',
         fields => ["parameter"],
     },
     'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::UnknownObject' => {
-        isa => 'Koha::Exceptions::Exception',
+        isa => 'Koha::Exception',
         description => 'Object cannot be found or is not known',
     },
 );

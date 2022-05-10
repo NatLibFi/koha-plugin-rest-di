@@ -1,0 +1,15 @@
+---
+properties:
+  availability:
+    $ref: ../availability.yaml
+  biblio_id:
+    description: Record internal identifier
+    type: integer
+  item_availabilities:
+    description: Availability of each item in this record
+    items:
+      $ref: ./item.yaml
+    type:
+      - array
+      - "null"
+type: object

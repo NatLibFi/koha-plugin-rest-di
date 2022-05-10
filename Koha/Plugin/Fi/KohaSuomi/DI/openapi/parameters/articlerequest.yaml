@@ -1,0 +1,7 @@
+---
+article_request_id_pp:
+  description: Article request internal identifier
+  in: path
+  name: article_request_id
+  required: true
+  type: integer

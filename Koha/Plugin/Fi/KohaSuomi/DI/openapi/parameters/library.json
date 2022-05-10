@@ -1,8 +1,0 @@
-{
-  "library_id_qp": {
-    "name": "library_id",
-    "in": "query",
-    "description": "Internal library identifier",
-    "type": "string"
-  }
-}

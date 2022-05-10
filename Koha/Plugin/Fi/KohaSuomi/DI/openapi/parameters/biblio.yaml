@@ -1,0 +1,7 @@
+---
+biblio_id_pp:
+  description: Record internal identifier
+  in: path
+  name: biblio_id
+  required: true
+  type: integer

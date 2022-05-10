@@ -4,7 +4,7 @@ This is a REST API plugin for Koha. It provides extended API support for Discove
 
 Most of the functionality has been ported from the KohaSuomi version of Koha (see  https://github.com/KohaSuomi/Koha).
 
-Note that this plugin requires Koha functionality that is only available from Koha 20.05.
+Note that this plugin requires Koha functionality that is only available from Koha 22.05. Releases for older versions are also available.
 
 Note also that not all the functionality has been thoroughly tested yet.
 

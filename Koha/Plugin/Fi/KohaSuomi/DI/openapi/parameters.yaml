@@ -1,0 +1,45 @@
+---
+article_request_id_pp:
+  $ref: parameters/articlerequest.yaml#/article_request_id_pp
+biblio_id_pp:
+  $ref: parameters/biblio.yaml#/biblio_id_pp
+item_id_pp:
+  $ref: parameters/item.yaml#/item_id_pp
+library_id_qp:
+  $ref: parameters/library.yaml#/library_id_qp
+match:
+  description: Matching criteria
+  enum:
+    - contains
+    - exact
+    - starts_with
+    - ends_with
+  in: query
+  name: _match
+  required: false
+  type: string
+order_by:
+  collectionFormat: pipes
+  description: Sorting criteria
+  in: query
+  items:
+    type: string
+  name: _order_by
+  required: false
+  type: array
+page:
+  description: 'Page number, for paginated object listing'
+  in: query
+  name: _page
+  required: false
+  type: integer
+patron_id_pp:
+  $ref: parameters/patron.yaml#/patron_id_pp
+patron_id_qp:
+  $ref: parameters/patron.yaml#/patron_id_qp
+per_page:
+  description: 'Page size, for paginated object listing'
+  in: query
+  name: _per_page
+  required: false
+  type: integer

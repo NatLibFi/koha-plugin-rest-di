@@ -1,9 +1,0 @@
-{
-    "article_request_id_pp": {
-      "name": "article_request_id",
-      "in": "path",
-      "description": "Article request internal identifier",
-      "required": true,
-      "type": "integer"
-    }
-}

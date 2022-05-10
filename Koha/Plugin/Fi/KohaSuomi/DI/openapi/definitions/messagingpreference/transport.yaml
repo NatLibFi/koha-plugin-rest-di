@@ -1,0 +1,38 @@
+---
+additionalProperties: false
+properties:
+  days_in_advance:
+    properties:
+      configurable:
+        description: Can this message have a value for days in advance
+        readOnly: true
+        type: boolean
+      value:
+        maximum: 30
+        minimum: 0
+        type:
+          - integer
+          - "null"
+    type: object
+  digest:
+    properties:
+      configurable:
+        description: Can this message be requested as digest
+        readOnly: false
+        type: boolean
+      value:
+        description: Is digest enabled
+        type: boolean
+    type: object
+  transport_types:
+    properties:
+      email:
+        type: boolean
+      phone:
+        type: boolean
+      print:
+        type: boolean
+      sms:
+        type: boolean
+    type: object
+type: object
