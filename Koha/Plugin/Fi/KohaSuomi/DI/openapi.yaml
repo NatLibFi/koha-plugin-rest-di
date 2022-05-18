@@ -725,12 +725,12 @@ paths:
       operationId: updatePatronDI
       parameters:
         - $ref: ./openapi/parameters.yaml#/patron_id_pp
-        - description: A JSON object containing new information about existing patron
+        - description: A JSON object containing any of the patron fields to update
           in: body
           name: body
           required: true
           schema:
-            $ref: ./openapi/definitions/patron.yaml
+            type: object
       produces:
         - application/json
       responses:
