@@ -1,0 +1,10 @@
+---
+type: object
+properties:
+  error:
+    description: Error message
+    type: string
+  error_code:
+    description: Error code
+    type: string
+additionalProperties: true

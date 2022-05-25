@@ -23,7 +23,6 @@ use Modern::Perl;
 use Modern::Perl;
 use Scalar::Util qw(blessed);
 
-use Email::Valid;
 use DateTime;
 
 use C4::Context;
@@ -64,7 +63,7 @@ sub email {
     return 1 unless $address;
     return 0 if $address =~ /(^(\s))|((\s)$)/;
 
-    return (not defined Email::Valid->address($address)) ? 0:1;
+    return Koha::Email->is_valid($address);
 }
 
 =head3 phone
@@ -180,7 +179,7 @@ sub v_h {
 sub v_email {
     my ($package, $val) = @_;
 
-    return 'is not a valid \'email\'' if (not defined Email::Valid->address($val));
+    return 'is not a valid \'email\'' if (not Koha::Email->is_valid($val));
     return undef;
 }
 sub v_DateTime {

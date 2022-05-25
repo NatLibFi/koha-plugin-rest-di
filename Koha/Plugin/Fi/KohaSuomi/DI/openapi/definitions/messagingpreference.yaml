@@ -1,0 +1,13 @@
+---
+properties:
+  Advance_Notice:
+    $ref: messagingpreference/transport.yaml
+  Hold_Filled:
+    $ref: messagingpreference/transport.yaml
+  Item_Check_in:
+    $ref: messagingpreference/transport.yaml
+  Item_Checkout:
+    $ref: messagingpreference/transport.yaml
+  Item_Due:
+    $ref: messagingpreference/transport.yaml
+type: object

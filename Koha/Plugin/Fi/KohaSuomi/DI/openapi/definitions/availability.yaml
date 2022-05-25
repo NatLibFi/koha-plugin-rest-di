@@ -1,0 +1,12 @@
+---
+properties:
+  available:
+    description: Availability status
+    type: boolean
+  confirmations:
+    $ref: ./availability/reason.yaml
+  notes:
+    $ref: ./availability/reason.yaml
+  unavailability:
+    $ref: ./availability/reason.yaml
+type: object

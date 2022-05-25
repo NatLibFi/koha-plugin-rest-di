@@ -1,0 +1,37 @@
+---
+biblio_id:
+  description: Internal biblio identifier
+  type: integer
+cardnumber:
+  description: library assigned user identifier
+  type:
+    - string
+    - "null"
+email:
+  description: primary email address for patron's primary address
+  type:
+    - string
+    - "null"
+firstname:
+  description: patron's first name
+  type:
+    - string
+    - "null"
+library_id:
+  description: internally assigned library identifier
+  maxLength: 10
+  minLength: 1
+  type: string
+patron_id:
+  description: Internal patron identifier
+  type: integer
+phone:
+  description: primary phone number for patron's primary address
+  type:
+    - string
+    - "null"
+surname:
+  description: patron's last name
+  type:
+    - string
+    - "null"

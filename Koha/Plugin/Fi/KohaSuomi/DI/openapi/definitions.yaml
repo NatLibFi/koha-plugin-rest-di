@@ -1,0 +1,9 @@
+---
+availability/biblio:
+  $ref: ./definitions/availability/biblio.yaml
+availability/item:
+  $ref: ./definitions/availability/item.yaml
+availability/reason:
+  $ref: ./definitions/availability/reason.yaml
+error:
+  $ref: "./definitions/error.yaml"

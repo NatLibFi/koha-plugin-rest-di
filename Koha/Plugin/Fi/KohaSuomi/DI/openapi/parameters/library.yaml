@@ -1,0 +1,6 @@
+---
+library_id_qp:
+  description: Internal library identifier
+  in: query
+  name: library_id
+  type: string

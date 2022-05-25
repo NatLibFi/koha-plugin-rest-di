@@ -1,0 +1,7 @@
+---
+item_id_pp:
+  description: Internal item identifier
+  in: path
+  name: item_id
+  required: true
+  type: integer

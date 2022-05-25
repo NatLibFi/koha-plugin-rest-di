@@ -1,0 +1,52 @@
+# These requests can be used with VSCode REST Client plugin.
+
+# Use login to get an OAuth2 token, then use it in the authorization header. 
+
+# Settings (set in VSCode settings.json file or uncomment and set below).
+# Example settings.json:
+#{
+#    "rest-client.environmentVariables": {
+#        "local": {
+#            "baseUrl": "http://localhost/api/v1",
+#            "clientId": "12345678-abcd-1234-abcd-1234567890ab",
+#            "clientSecret": "23456789-abcd-1234-abcd-1234567890ab" 
+#        }
+#    }
+#}
+#
+# Make sure to activate the correct environment in VSCode (lower right corner).
+#
+#@baseUrl = "http://localhost/api/v1"
+#@clientId = "12345678-1234..."
+#@clientSecret = "12345678-1234..."
+
+# OAuth2 token, retrieved from login request:
+@token = {{login.response.body.access_token}}
+
+### 
+# @name login
+POST {{baseUrl}}/oauth/token HTTP/1.1
+Accept: application/json
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials&client_id={{clientId}}&client_secret={{clientSecret}}&scope=
+
+###
+# @name item_statuses
+GET {{baseUrl}}/contrib/kohasuomi/availability/biblios/2/search HTTP/1.1
+Authorization: Bearer {{token}}
+
+###
+# @name hold_availability
+GET {{baseUrl}}/contrib/kohasuomi/availability/biblios/2/hold HTTP/1.1
+Authorization: Bearer {{token}}
+
+###
+# @name patron_status
+GET {{baseUrl}}/contrib/kohasuomi/patrons/1?query_messaging_preferences=1 HTTP/1.1
+Authorization: Bearer {{token}}
+
+###
+# @name patron_anonymize
+DELETE {{baseUrl}}/contrib/kohasuomi/patrons/1/checkouts/history HTTP/1.1
+Authorization: Bearer {{token}}

@@ -1,0 +1,1136 @@
+# Note: This is a full specification, but only paths are actually used.
+# Any refs are rewritten as absolute file uris.
+---
+swagger: "2.0"
+paths:
+  /auth/patrons/validation:
+    post:
+      consumes:
+        - application/json
+      description: Validates password for a patron identified by card number or user id.
+      operationId: authValidatePatronCredentialsDI
+      parameters:
+        - description: A password validation request
+          in: body
+          name: body
+          schema:
+            properties:
+              cardnumber:
+                description: Card number for the patron
+                type: string
+              password:
+                description: Password for the patron
+                type: string
+              userid:
+                description: User login ID for the patron
+                type: string
+            type: object
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Patron information upon successful validation
+          schema:
+            type: object
+        400:
+          description: Bad parameters
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        401:
+          description: Bad username/cardnumber and/or password
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        403:
+          description: Access forbidden
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        500:
+          description: Internal error
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        503:
+          description: Under maintenance
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+      tags:
+        - patrons
+      x-koha-authorization:
+        permissions:
+          borrowers: "1"
+      x-mojo-to: Fi::KohaSuomi::DI::PatronController#validate_credentials
+  "/availability/biblios/{biblio_id}/articlerequest":
+    get:
+      operationId: articleRequestBiblioAvailabilityDI
+      parameters:
+        - $ref: ./openapi/parameters.yaml#/biblio_id_pp
+        - $ref: ./openapi/parameters.yaml#/patron_id_qp
+        - $ref: ./openapi/parameters.yaml#/library_id_qp
+        - description: Check only first n available items.
+          in: query
+          name: limit_items
+          required: false
+          type: integer
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Article requet availability information for items of biblio.
+          schema:
+            properties:
+              availability:
+                properties:
+                  available:
+                    description: Availability status
+                    type: boolean
+                  confirmations:
+                    $ref: ./openapi/definitions.yaml#/availability~1reason
+                  notes:
+                    $ref: ./openapi/definitions.yaml#/availability~1reason
+                  unavailability:
+                    $ref: ./openapi/definitions.yaml#/availability~1reason
+                type: object
+              biblio_id:
+                description: Record internal identifier
+                type: integer
+              items_availability:
+                description: Availability of each item in this biblio
+                items:
+                  $ref: ./openapi/definitions.yaml#/availability~1item
+                type:
+                  - array
+                  - "null"
+            type: object
+        400:
+          description: Missing or invalid parameters
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        401:
+          description: Authentication required
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        403:
+          description: Forbidden
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        404:
+          description: Biblio not found
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        500:
+          description: Internal server error
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        503:
+          description: Under maintenance
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+      tags:
+        - items
+        - availability
+      x-koha-authorization:
+        permissions:
+          catalogue: "1"
+      x-mojo-to: Fi::KohaSuomi::DI::AvailabilityController#biblio_article_request
+  "/availability/biblios/{biblio_id}/hold":
+    get:
+      consumes:
+        - application/json
+      operationId: holdBiblioAvailabilityDI
+      parameters:
+        - $ref: ./openapi/parameters.yaml#/biblio_id_pp
+        - $ref: ./openapi/parameters.yaml#/patron_id_qp
+        - $ref: ./openapi/parameters.yaml#/library_id_qp
+        - description: 'Return available pickup location(s) for each item. 1 = yes, 0 or no parameter = no.'
+          in: query
+          name: query_pickup_locations
+          required: false
+          type: integer
+        - description: "Ignore given patron's existing holds when calculating availability. 1 = yes, 0 or no parameter = no."
+          in: query
+          name: ignore_patron_holds
+          required: false
+          type: integer
+        - description: Check only first n available items.
+          in: query
+          name: limit_items
+          required: false
+          type: integer
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Hold availability information for items of biblio.
+          schema:
+            allOf:
+              - $ref: ./openapi/definitions.yaml#/availability~1biblio
+              - properties:
+                  hold_queue_length:
+                    minimum: 0
+                    type: integer
+                type: object
+        400:
+          description: Missing or invalid parameters
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        401:
+          description: Authentication required
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        403:
+          description: Forbidden
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        404:
+          description: Biblio not found
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        500:
+          description: Internal server error
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        503:
+          description: Under maintenance
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+      tags:
+        - items
+        - availability
+      x-koha-authorization:
+        permissions:
+          catalogue: "1"
+      x-mojo-to: Fi::KohaSuomi::DI::AvailabilityController#biblio_hold
+  "/availability/biblios/{biblio_id}/search":
+    get:
+      consumes:
+        - application/json
+      operationId: searchBiblioAvailabilityDI
+      parameters:
+        - $ref: ./openapi/parameters.yaml#/biblio_id_pp
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Availability information in search context for items of biblio.
+          schema:
+            $ref: ./openapi/definitions.yaml#/availability~1biblio
+        400:
+          description: Missing or invalid parameters
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        404:
+          description: Biblio not found
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        500:
+          description: Internal server error
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        503:
+          description: Under maintenance
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+      tags:
+        - items
+        - availability
+      x-koha-authorization:
+        permissions:
+          catalogue: "1"
+      x-mojo-to: Fi::KohaSuomi::DI::AvailabilityController#biblio_search
+  "/availability/items/{item_id}/articlerequest":
+    get:
+      consumes:
+        - application/json
+      operationId: articleRequestItemAvailabilityDI
+      parameters:
+        - $ref: ./openapi/parameters.yaml#/item_id_pp
+        - $ref: ./openapi/parameters.yaml#/patron_id_qp
+        - $ref: ./openapi/parameters.yaml#/library_id_qp
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Article request availability information for specific item.
+          schema:
+            $ref: ./openapi/definitions.yaml#/availability~1item
+        400:
+          description: Missing or invalid parameters
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        401:
+          description: Authentication required
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        403:
+          description: Forbidden
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        404:
+          description: Item not found
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        500:
+          description: Internal server error
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        503:
+          description: Under maintenance
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+      tags:
+        - items
+        - availability
+      x-koha-authorization:
+        permissions:
+          catalogue: "1"
+      x-mojo-to: Fi::KohaSuomi::DI::AvailabilityController#item_article_request
+  "/availability/items/{item_id}/checkout":
+    get:
+      consumes:
+        - application/json
+      operationId: checkoutItemAvailabilityDI
+      parameters:
+        - $ref: ./openapi/parameters.yaml#/item_id_pp
+        - $ref: ./openapi/parameters.yaml#/patron_id_qp
+        - $ref: ./openapi/parameters.yaml#/library_id_qp
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Checkout availability information for specific item.
+          schema:
+            $ref: ./openapi/definitions.yaml#/availability~1item
+        400:
+          description: Missing or invalid parameters
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        401:
+          description: Authentication required
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        403:
+          description: Forbidden
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        404:
+          description: Item not found
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        500:
+          description: Internal server error
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        503:
+          description: Under maintenance
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+      tags:
+        - items
+        - availability
+      x-koha-authorization:
+        permissions:
+          catalogue: "1"
+      x-mojo-to: Fi::KohaSuomi::DI::AvailabilityController#item_checkout
+  "/availability/items/{item_id}/hold":
+    get:
+      operationId: holdItemAvailabilityDI
+      parameters:
+        - $ref: ./openapi/parameters.yaml#/item_id_pp
+        - $ref: ./openapi/parameters.yaml#/patron_id_qp
+        - $ref: ./openapi/parameters.yaml#/library_id_qp
+        - description: 'Return available pickup location(s) for each item. 1 = yes, 0 or no parameter = no.'
+          in: query
+          name: query_pickup_locations
+          required: false
+          type: integer
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Hold availability information for specific item.
+          schema:
+            $ref: ./openapi/definitions.yaml#/availability~1item
+        400:
+          description: Missing or invalid parameters
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        401:
+          description: Authentication required
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        403:
+          description: Forbidden
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        404:
+          description: Item not found
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        500:
+          description: Internal server error
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        503:
+          description: Under maintenance
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+      tags:
+        - items
+        - availability
+      x-koha-authorization:
+        permissions:
+          catalogue: "1"
+      x-mojo-to: Fi::KohaSuomi::DI::AvailabilityController#item_hold
+  "/biblios/{biblio_id}/holdings":
+    get:
+      operationId: holdingsByBiblioDI
+      parameters:
+        - $ref: ./openapi/parameters.yaml#/biblio_id_pp
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Holdings records for the given biblio record
+        500:
+          description: Internal error
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        503:
+          description: Under maintenance
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+      tags:
+        - biblios
+        - holdings
+      x-koha-authorization:
+        permissions:
+          catalogue: "1"
+      x-mojo-to: Fi::KohaSuomi::DI::BiblioController#get_holdings
+  "/biblios/{biblio_id}/serialsubscriptions":
+    get:
+      operationId: serialSubscriptionsByBiblioDI
+      parameters:
+        - $ref: ./openapi/parameters.yaml#/biblio_id_pp
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Serial subscriptions data for the given biblio record
+        404:
+          description: Biblio not found
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        500:
+          description: Internal error
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        503:
+          description: Under maintenance
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+      tags:
+        - biblios
+        - serials
+      x-koha-authorization:
+        permissions:
+          catalogue: "1"
+      x-mojo-to: Fi::KohaSuomi::DI::BiblioController#get_serial_subscriptions
+  /coursereserves:
+    get:
+      operationId: getCourseReservesDI
+      parameters:
+        - description: Limit results to the given course.
+          in: query
+          name: course_id
+          required: false
+          type: integer
+        - description: Limit results to the given department (authorised value).
+          in: query
+          name: department
+          required: false
+          type: string
+        - description: Limit results to the given instructor (patron).
+          in: query
+          name: patron_id
+          required: false
+          type: integer
+        - $ref: ./openapi/parameters.yaml#/page
+        - $ref: ./openapi/parameters.yaml#/per_page
+        - $ref: ./openapi/parameters.yaml#/order_by
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Course information
+          schema:
+            items:
+              type: object
+            type: array
+        401:
+          description: Authentication required
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        403:
+          description: Access forbidden
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        500:
+          description: Internal server error
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        503:
+          description: Under maintenance
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+      tags:
+        - course_reserves
+      x-koha-authorization:
+        permissions:
+          catalogue: "1"
+      x-mojo-to: Fi::KohaSuomi::DI::CourseReservesController#getCourseReserves
+  /courses:
+    get:
+      operationId: getCoursesDI
+      parameters:
+        - $ref: ./openapi/parameters.yaml#/page
+        - $ref: ./openapi/parameters.yaml#/per_page
+        - $ref: ./openapi/parameters.yaml#/order_by
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Course information
+          schema:
+            items:
+              type: object
+            type: array
+        401:
+          description: Authentication required
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        403:
+          description: Access forbidden
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        500:
+          description: Internal server error
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        503:
+          description: Under maintenance
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+      tags:
+        - course_reserves
+      x-koha-authorization:
+        permissions:
+          catalogue: "1"
+      x-mojo-to: Fi::KohaSuomi::DI::CourseReservesController#getCourses
+  /departments:
+    get:
+      operationId: getDepartmentsDI
+      parameters:
+        - $ref: ./openapi/parameters.yaml#/page
+        - $ref: ./openapi/parameters.yaml#/per_page
+        - $ref: ./openapi/parameters.yaml#/order_by
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Department information
+          schema:
+            items:
+              type: object
+            type: array
+        401:
+          description: Authentication required
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        403:
+          description: Access forbidden
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        500:
+          description: Internal server error
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        503:
+          description: Under maintenance
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+      tags:
+        - course_reserves
+      x-koha-authorization:
+        permissions:
+          catalogue: "1"
+      x-mojo-to: Fi::KohaSuomi::DI::CourseReservesController#getDepartments
+  /instructors:
+    get:
+      operationId: getInstructorsDI
+      parameters:
+        - $ref: ./openapi/parameters.yaml#/page
+        - $ref: ./openapi/parameters.yaml#/per_page
+        - $ref: ./openapi/parameters.yaml#/order_by
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Instructor information
+          schema:
+            items:
+              type: object
+            type: array
+        401:
+          description: Authentication required
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        403:
+          description: Access forbidden
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        500:
+          description: Internal server error
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        503:
+          description: Under maintenance
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+      tags:
+        - course_reserves
+      x-koha-authorization:
+        permissions:
+          catalogue: "1"
+      x-mojo-to: Fi::KohaSuomi::DI::CourseReservesController#getInstructors
+  /patrons/validation:
+    post:
+      consumes:
+        - application/json
+      description: DEPRECATED. Use auth/patrons/validation instead.
+      operationId: validatePatronCredentialsDI
+      parameters:
+        - description: A password validation request
+          in: body
+          name: body
+          schema:
+            properties:
+              cardnumber:
+                description: Card number for the patron
+                type: string
+              password:
+                description: Password for the patron
+                type: string
+              userid:
+                description: User login ID for the patron
+                type: string
+            type: object
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Patron information upon successful validation
+          schema:
+            type: object
+        400:
+          description: Bad parameters
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        401:
+          description: Bad username/cardnumber and/or password
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        403:
+          description: Access forbidden
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        500:
+          description: Internal error
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        503:
+          description: Under maintenance
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+      tags:
+        - patrons
+      x-koha-authorization:
+        permissions:
+          borrowers: "1"
+      x-mojo-to: Fi::KohaSuomi::DI::PatronController#validate_credentials
+  "/patrons/{patron_id}":
+    get:
+      operationId: getPatronDI
+      parameters:
+        - $ref: ./openapi/parameters.yaml#/patron_id_pp
+        - description: "Return information about patron's blocks. 1 = yes, 0 or no parameter = no."
+          in: query
+          name: query_blocks
+          required: false
+          type: integer
+        - description: "Return information about patron's guarantors or guarantees. 1 = yes, 0 or no parameter = no."
+          in: query
+          name: query_relationships
+          required: false
+          type: integer
+        - description: "Return information about patron's messaging preferences. 1 = yes, 0 or no parameter = no."
+          in: query
+          name: query_messaging_preferences
+          required: false
+          type: integer
+        - description: "Return information about patron's permissions. 1 = yes, 0 or no parameter = no."
+          in: query
+          name: query_permissions
+          required: false
+          type: integer
+        - description: "Return patron's messages. 1 = yes, 0 or no parameter = no."
+          in: query
+          name: query_messages
+          required: false
+          type: integer
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Patron and additional information
+          schema:
+            type: object
+        401:
+          description: Authentication required
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        403:
+          description: Access forbidden
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        404:
+          description: Patron not found
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        500:
+          description: Internal server error
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        503:
+          description: Under maintenance
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+      tags:
+        - patrons
+      x-koha-authorization:
+        permissions:
+          borrowers: "1"
+      x-mojo-to: Fi::KohaSuomi::DI::PatronController#get
+    patch:
+      consumes:
+        - application/json
+      operationId: updatePatronDI
+      parameters:
+        - $ref: ./openapi/parameters.yaml#/patron_id_pp
+        - description: A JSON object containing any of the patron fields to update
+          in: body
+          name: body
+          required: true
+          schema:
+            type: object
+      produces:
+        - application/json
+      responses:
+        200:
+          description: A successfully updated patron
+          schema:
+            type: object
+        202:
+          description: Accepted and waiting for librarian verification
+          schema:
+            type: object
+        204:
+          description: No Content
+          schema:
+            type: object
+        400:
+          description: Bad parameter
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        403:
+          description: Access forbidden
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        404:
+          description: Resource not found
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        409:
+          description: Conflict in updating resource
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        500:
+          description: Internal server error
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+      tags:
+        - patrons
+      x-koha-authorization:
+        permissions:
+          borrowers: "1"
+      x-mojo-to: Fi::KohaSuomi::DI::PatronController#update
+  "/patrons/{patron_id}/articlerequests":
+    get:
+      operationId: listArticleRequestsDI
+      parameters:
+        - $ref: ./openapi/parameters.yaml#/patron_id_pp
+        - $ref: ./openapi/parameters.yaml#/page
+        - $ref: ./openapi/parameters.yaml#/per_page
+        - $ref: ./openapi/parameters.yaml#/match
+        - $ref: ./openapi/parameters.yaml#/order_by
+      produces:
+        - application/json
+      responses:
+        200:
+          description: A list of article requests
+          schema:
+            items:
+              type: object
+            type: array
+        401:
+          description: Authentication required
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        403:
+          description: Request not allowed
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        404:
+          description: Patron not found
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        500:
+          description: Internal server error
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        503:
+          description: Under maintenance
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+      tags:
+        - patrons
+        - articlerequests
+      x-koha-authorization:
+        permissions:
+          borrowers: "1"
+      x-mojo-to: Fi::KohaSuomi::DI::ArticleRequestController#list
+    post:
+      consumes:
+        - application/json
+      operationId: addArticleRequestDI
+      parameters:
+        - $ref: ./openapi/parameters.yaml#/patron_id_pp
+        - description: A JSON object containing information about the new article request
+          in: body
+          name: body
+          required: true
+          schema:
+            properties:
+              author:
+                description: author information
+                type:
+                  - string
+                  - "null"
+              biblio_id:
+                description: Biblio internal identifier
+                type: integer
+              chapters:
+                description: chapter information
+                type:
+                  - string
+                  - "null"
+              date:
+                description: date information
+                type:
+                  - string
+                  - "null"
+              issue:
+                description: issue information
+                type:
+                  - string
+                  - "null"
+              item_id:
+                description: Item internal identifier
+                type: integer
+              library_id:
+                description: Pickup location
+                type:
+                  - string
+                  - "null"
+              pages:
+                description: page information
+                type:
+                  - string
+                  - "null"
+              patron_notes:
+                description: notes by patron related to this article request
+                type:
+                  - string
+                  - "null"
+              title:
+                description: title information
+                type:
+                  - string
+                  - "null"
+              volume:
+                description: volume information
+                type:
+                  - string
+                  - "null"
+            type: object
+      produces:
+        - application/json
+      responses:
+        201:
+          description: Created article request
+          schema:
+            type: object
+        400:
+          description: Missing or wrong parameters
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        401:
+          description: Authentication required
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        403:
+          description: Request not allowed
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        404:
+          description: Patron not found
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        500:
+          description: Internal server error
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        503:
+          description: Under maintenance
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+      tags:
+        - patrons
+        - articlerequests
+      x-koha-authorization:
+        permissions:
+          reserveforothers: "1"
+      x-mojo-to: Fi::KohaSuomi::DI::ArticleRequestController#add
+  "/patrons/{patron_id}/articlerequests/{article_request_id}":
+    delete:
+      operationId: deleteArticleRequestDI
+      parameters:
+        - $ref: ./openapi/parameters.yaml#/patron_id_pp
+        - $ref: ./openapi/parameters.yaml#/article_request_id_pp
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Successful deletion
+          schema:
+            type: object
+        401:
+          description: Authentication required
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        403:
+          description: Cancellation forbidden
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        404:
+          description: Article request not found
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        500:
+          description: Internal server error
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        503:
+          description: Under maintenance
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+      tags:
+        - articlerequests
+      x-koha-authorization:
+        permissions:
+          reserveforothers: "1"
+      x-mojo-to: Fi::KohaSuomi::DI::ArticleRequestController#delete
+    put:
+      consumes:
+        - application/json
+      operationId: editArticleRequestDI
+      parameters:
+        - $ref: ./openapi/parameters.yaml#/patron_id_pp
+        - $ref: ./openapi/parameters.yaml#/article_request_id_pp
+        - description: A JSON object containing fields to modify
+          in: body
+          name: body
+          required: true
+          schema:
+            properties:
+              branchcode:
+                description: Pickup location
+                type: string
+            type: object
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Updated article request
+          schema:
+            type: object
+        400:
+          description: Missing or wrong parameters
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        401:
+          description: Authentication required
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        403:
+          description: Article request not allowed
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        404:
+          description: Article request not found
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        500:
+          description: Internal server error
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        503:
+          description: Under maintenance
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+      tags:
+        - articlerequests
+      x-koha-authorization:
+        permissions:
+          reserveforothers: "1"
+      x-mojo-to: Fi::KohaSuomi::DI::ArticleRequestController#edit
+  "/patrons/{patron_id}/checkouts":
+    get:
+      operationId: listCheckoutsWithRenewabilityDI
+      parameters:
+        - $ref: ./openapi/parameters.yaml#/patron_id_pp
+        - $ref: ./openapi/parameters.yaml#/page
+        - $ref: ./openapi/parameters.yaml#/per_page
+        - $ref: ./openapi/parameters.yaml#/match
+        - $ref: ./openapi/parameters.yaml#/order_by
+        - description: 'By default, current checkouts are returned, when this is true then checked in checkouts are returned as result.'
+          in: query
+          name: checked_in
+          type: boolean
+      produces:
+        - application/json
+      responses:
+        200:
+          description: A list of checkouts
+        403:
+          description: Access forbidden
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        404:
+          description: Patron not found
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+      tags:
+        - patrons
+        - checkouts
+      x-koha-authorization:
+        permissions:
+          circulate: circulate_remaining_permissions
+      x-mojo-to: Fi::KohaSuomi::DI::PatronController#list_checkouts
+  "/patrons/{patron_id}/checkouts/history":
+    delete:
+      operationId: purgeCheckoutHistoryDI
+      parameters:
+        - $ref: ./openapi/parameters.yaml#/patron_id_pp
+      produces:
+        - application/json
+      responses:
+        204:
+          description: Checkout history deleted successfully
+        401:
+          description: Authentication required
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        403:
+          description: Access forbidden
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        404:
+          description: Patron not found
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        500:
+          description: Internal error
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        503:
+          description: Under maintenance
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+      tags:
+        - patrons
+        - checkouts
+      x-koha-authorization:
+        permissions:
+          circulate: circulate_remaining_permissions
+      x-mojo-to: Fi::KohaSuomi::DI::PatronController#purge_checkout_history
+  "/patrons/{patron_id}/messaging_preferences":
+    put:
+      description: Modifies patron's messaging preferences. Please note that not all parameters defined in body object's documentation can actually be used for each message option due to dynamic configuration. Make a GET request for patron with query_messaging_preferences=1 first to see whether an option is configurable or if message transport type is available.
+      operationId: editMessagingPreferencesDI
+      parameters:
+        - $ref: ./openapi/parameters.yaml#/patron_id_pp
+        - description: A JSON object containing information on messaging preferences
+          in: body
+          name: body
+          required: true
+          schema:
+            $ref: ./openapi/definitions/messagingpreference.yaml
+      produces:
+        - application/json
+      responses:
+        200:
+          description: A messaging preferences object
+          schema:
+            $ref: ./openapi/definitions/messagingpreference.yaml
+        400:
+          description: Missing or wrong parameters
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        401:
+          description: Authentication required
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        403:
+          description: Access forbidden
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        404:
+          description: Patron or category not found
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        500:
+          description: Internal error
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        503:
+          description: Under maintenance
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+      tags:
+        - notices
+      x-koha-authorization:
+        permissions:
+          borrowers: "1"
+      x-mojo-to: Fi::KohaSuomi::DI::PatronController#edit_messaging_preferences
+info:
+  title: Koha REST API Discovery Interface Plugin
+  version: "1"

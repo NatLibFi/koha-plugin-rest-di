@@ -1,0 +1,63 @@
+---
+properties:
+  availability:
+    $ref: ../availability.yaml
+  biblio_id:
+    description: Internal identifier for the parent bibliographic record
+    type: integer
+  callnumber:
+    description: Call number for this item
+    type:
+      - string
+      - "null"
+  collection_code:
+    description: Authorized value for the collection code associated with this item
+    type:
+      - string
+      - "null"
+  collection_code_description:
+    description: Collection ccode description as printed in the staff client
+    type:
+      - string
+      - "null"
+  extended_subfields:
+    description: Additional 952 subfields in XML format
+    type:
+      - string
+      - "null"
+  external_id:
+    description: The item's barcode
+    type:
+      - string
+      - "null"
+  hold_queue_length:
+    description: number of holdings placed on title/item
+    type:
+      - integer
+      - "null"
+  holding_library_id:
+    description: Library that is currently in possession item
+    type:
+      - string
+      - "null"
+  home_library_id:
+    description: Internal library id for the library the item belongs to
+    type:
+      - string
+      - "null"
+  location:
+    description: authorized value for the shelving location for this item
+    type:
+      - string
+      - "null"
+  public_notes:
+    description: Public notes on this item
+    type:
+      - string
+      - "null"
+  serial_issue_number:
+    description: serial enumeration/chronology for the item
+    type:
+      - string
+      - "null"
+type: object
