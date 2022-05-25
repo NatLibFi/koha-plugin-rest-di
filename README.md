@@ -12,6 +12,8 @@ Note also that not all the functionality has been thoroughly tested yet.
 
 You can download the relevant *.kpz file from the [release page](https://github.com/NatLibFi/koha-plugin-rest-di/releases).
 
+Latest version may not support older Koha versions. Please choose an appropriate version.
+
 ## Installing
 
 The plugin is installed by uploading the KPZ (Koha Plugin Zip) package of a released version on the Manage Plugins page of the Koha staff interface.
@@ -107,7 +109,7 @@ If you need to use the plugin without a KPZ package (e.g. to use a version clone
 Travis will build the release provided the commit includes a suitable version tag:
 
 1. `git tag -a vX.Y.Z -m "Release X.Y.Z"` (Feel free to provide a longer message too, it's displayed on the Releases page)
-2. `git push --tags origin master`
+2. `git push --tags origin main`
 
 To manually build a release locally, run `./build.sh`.
 
