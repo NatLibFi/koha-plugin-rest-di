@@ -249,12 +249,11 @@ sub purge_checkout_history {
     my $borrowernumber = $c->validation->param('patron_id');
     my $patron;
     return try {
-        my $patrons = Koha::Patrons->search({
+        $patron = Koha::Patrons->find({
             'me.borrowernumber' => $borrowernumber
         });
-        $patrons->anonymise_issue_history;
-        $patron = $patrons->next;
-
+        $patron->old_checkouts->anonymize;
+        
         return $c->render( status => 204, openapi => {} );
     }
     catch {

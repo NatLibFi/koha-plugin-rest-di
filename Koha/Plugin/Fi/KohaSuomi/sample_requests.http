@@ -45,3 +45,8 @@ Authorization: Bearer {{token}}
 # @name patron_status
 GET {{baseUrl}}/contrib/kohasuomi/patrons/1?query_messaging_preferences=1 HTTP/1.1
 Authorization: Bearer {{token}}
+
+###
+# @name patron_anonymize
+DELETE {{baseUrl}}/contrib/kohasuomi/patrons/1/checkouts/history HTTP/1.1
+Authorization: Bearer {{token}}
