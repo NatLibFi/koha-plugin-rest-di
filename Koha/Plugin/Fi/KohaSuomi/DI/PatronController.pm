@@ -442,12 +442,14 @@ sub list_checkouts {
         $filtered_params->{borrowernumber} = $patron->borrowernumber;
 
         # Perform search
+        my $checkouts_base_total = $checkouts_set->count();
         my $checkouts = $checkouts_set->search( $filtered_params, $attributes );
 
         if ($checkouts->is_paged) {
             $c->add_pagination_headers({
                 total => $checkouts->pager->total_entries,
                 params => $args,
+                base_total => $checkouts_base_total,
             });
         }
 
