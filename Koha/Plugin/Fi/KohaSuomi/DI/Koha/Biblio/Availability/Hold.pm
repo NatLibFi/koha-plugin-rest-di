@@ -122,7 +122,7 @@ sub _item_looper {
     if (@hostitemnumbers) {
         my @hostitems = Koha::Items->search({
             itemnumber => { 'in' => @hostitemnumbers }
-        });
+        })->as_list;
         push @items, @hostitems;
     }
 

@@ -234,11 +234,11 @@ sub on_shelf_holds_forbidden {
     } elsif ($on_shelf_holds == 1) {
         return;
     } elsif ($on_shelf_holds == 2) {
-        my @items = Koha::Items->search({ biblionumber => $item->biblionumber });
+        my $items = Koha::Items->search({ biblionumber => $item->biblionumber });
 
         my $any_available = 0;
 
-        foreach my $i (@items) {
+        while ( my $i = $items->next ) {
             unless ($i->itemlost
               || $i->notforloan > 0
               || $i->withdrawn
