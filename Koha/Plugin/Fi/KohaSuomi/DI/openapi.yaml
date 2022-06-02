@@ -781,6 +781,17 @@ paths:
         - $ref: ./openapi/parameters.yaml#/per_page
         - $ref: ./openapi/parameters.yaml#/match
         - $ref: ./openapi/parameters.yaml#/order_by
+        - name: status
+          description: 'Request status'
+          in: query
+          required: false
+          type: string
+          enum:
+            - REQUESTED
+            - PENDING
+            - PROCESSING
+            - COMPLETED
+            - CANCELED
       produces:
         - application/json
       responses:
