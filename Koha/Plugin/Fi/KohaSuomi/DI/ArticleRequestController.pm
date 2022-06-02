@@ -79,14 +79,15 @@ sub list {
         $filtered_params->{borrowernumber} = $c->validation->param('patron_id');
 
         my $requests = $ar_rs->search( $filtered_params, $attributes );
-        if ( $ar_rs->is_paged ) {
-            $c->add_pagination_headers(
-                {
-                    total  => $requests->pager->total_entries,
-                    params => $args,
-                }
-            );
-        }
+        my $total = $ar_rs->search( {borrowernumber => $c->validation->param('patron_id') } )->count;
+        
+        $c->add_pagination_headers(
+            {
+                total      => ($requests->is_paged ? $requests->pager->total_entries : $requests->count),
+                base_total => $total,
+                params     => $args,
+            }
+        );
 
         return $c->render( status => 200, openapi => $requests->to_api );
     }

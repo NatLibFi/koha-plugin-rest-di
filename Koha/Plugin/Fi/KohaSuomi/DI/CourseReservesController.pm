@@ -138,13 +138,13 @@ sub _get_paged_results
 
         # Perform search
         my $results = $result_set->search($filtered_params, $attributes);
+        my $total   = $result_set->search({}, $attributes)->count;
 
-        if ($results->is_paged) {
-            $c->add_pagination_headers({
-                total => $results->pager->total_entries,
-                params => $args,
-            });
-        }
+        $c->add_pagination_headers({
+            total => ($results->is_paged ? $results->pager->total_entries : $results->count),
+            base_total => $total,
+            params => $args,
+        });
 
         return $c->render(status => 200, openapi => $results->to_api());
     } catch {

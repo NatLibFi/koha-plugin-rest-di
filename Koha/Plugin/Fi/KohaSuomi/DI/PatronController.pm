@@ -443,13 +443,15 @@ sub list_checkouts {
 
         # Perform search
         my $checkouts = $checkouts_set->search( $filtered_params, $attributes );
+        my $total     = $checkouts_set->search->count;
 
-        if ($checkouts->is_paged) {
-            $c->add_pagination_headers({
-                total => $checkouts->pager->total_entries,
-                params => $args,
-            });
-        }
+        $c->add_pagination_headers(
+            {
+                total      => ($checkouts->is_paged ? $checkouts->pager->total_entries : $checkouts->count),
+                base_total => $checkouts->count,
+                params     => $args,
+            }
+        );
 
         # TODO: Create Koha::Availability::Renew for checking renewability
         #       via Koha::Availability
