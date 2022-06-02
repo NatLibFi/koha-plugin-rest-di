@@ -47,6 +47,41 @@ GET {{baseUrl}}/contrib/kohasuomi/patrons/1?query_messaging_preferences=1 HTTP/1
 Authorization: Bearer {{token}}
 
 ###
+# @name patron_article_requests
+GET {{baseUrl}}/contrib/kohasuomi/patrons/57/articlerequests HTTP/1.1
+Authorization: Bearer {{token}}
+
+###
+# @name patron_article_requests_canceled
+GET {{baseUrl}}/contrib/kohasuomi/patrons/57/articlerequests?status=CANCELED HTTP/1.1
+Authorization: Bearer {{token}}
+
+###
+# @name patron_article_requests_page
+GET {{baseUrl}}/contrib/kohasuomi/patrons/57/articlerequests?status=CANCELED&_page=2&_per_page=2 HTTP/1.1
+Authorization: Bearer {{token}}
+
+###
+# @name patron_checkouts
+GET {{baseUrl}}/contrib/kohasuomi/patrons/306/checkouts HTTP/1.1
+Authorization: Bearer {{token}}
+
+###
+# @name patron_checkouts_page
+GET {{baseUrl}}/contrib/kohasuomi/patrons/306/checkouts?_page=2&_per_page=2 HTTP/1.1
+Authorization: Bearer {{token}}
+
+###
 # @name patron_anonymize
 DELETE {{baseUrl}}/contrib/kohasuomi/patrons/1/checkouts/history HTTP/1.1
+Authorization: Bearer {{token}}
+
+###
+# @name course_reserves
+GET {{baseUrl}}/contrib/kohasuomi/coursereserves?_page=1 HTTP/1.1
+Authorization: Bearer {{token}}
+
+###
+# @name course_reserves_course_1
+GET {{baseUrl}}/contrib/kohasuomi/coursereserves?course_id=1&_page=1 HTTP/1.1
 Authorization: Bearer {{token}}
