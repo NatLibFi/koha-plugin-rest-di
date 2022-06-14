@@ -394,17 +394,19 @@ sub list_checkouts {
         }
 
         my $args = $c->validation->output;
+        # Note: enumchron is mapped to serial_issue_number for compatibility with Koha item mapping
+        # but also output as is for back-compatibility of the API.
         my $attributes = {
             join => { 'item' => ['biblio', 'biblioitem'] },
             '+select' => [
                 'item.itype', 'item.homebranch', 'item.holdingbranch', 'item.ccode', 'item.permanent_location',
-                'item.enumchron', 'item.biblionumber', 'item.barcode',
+                'item.enumchron', 'item.enumchron', 'item.biblionumber', 'item.barcode',
                 'biblioitem.itemtype', 'biblioitem.publicationyear',
                 'biblio.title', 'biblio.subtitle', 'biblio.part_number', 'biblio.part_name', 'biblio.unititle', 'biblio.copyrightdate'
             ],
             '+as' => [
                 'item_itype', 'homebranch', 'holdingbranch', 'ccode', 'permanent_location', 
-                'enumchron', 'biblionumber', 'external_id',
+                'enumchron', 'serial_issue_number', 'biblionumber', 'external_id',
                 'biblio_itype', 'publication_year',
                 'title', 'subtitle', 'part_number', 'part_name', 'uniform_title', 'copyright_date'
             ]
