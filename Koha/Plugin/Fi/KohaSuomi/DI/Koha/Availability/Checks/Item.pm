@@ -300,14 +300,16 @@ sub notforloan {
     my ($self) = @_;
 
     my $item = $self->item;
+    my $effective_itemtype = $item->effective_itemtype // '';
+
     my $cache = Koha::Caches->get_instance('availability');
-    my $cached = $cache->get_from_cache('itemtype-'.$item->effective_itemtype);
+    my $cached = $cache->get_from_cache('itemtype-'.$effective_itemtype);
     my $itemtype;
     if ($cached) {
         $itemtype = Koha::ItemType->new->set($cached);
     } else {
-        $itemtype = Koha::ItemTypes->find($item->effective_itemtype);
-        $cache->set_in_cache('itemtype-'.$item->effective_itemtype,
+        $itemtype = Koha::ItemTypes->find($effective_itemtype);
+        $cache->set_in_cache('itemtype-'.$effective_itemtype,
                             $itemtype->unblessed, { expiry => 10 }) if $itemtype;
     }
 
@@ -384,7 +386,7 @@ sub pickup_locations {
         my $limit_type = C4::Context->preference('BranchTransferLimitsType');
         my $limits = Koha::Item::Transfer::Limits->search({
             fromBranch  => $self->item->holdingbranch,
-            $limit_type => $limit_type eq 'itemtype' ? $self->item->effective_itemtype : $self->item->ccode
+            $limit_type => $limit_type eq 'itemtype' ? ($self->item->effective_itemtype // '') : $self->item->ccode
         })->unblessed;
 
         foreach my $library (@$pickup_libraries) {
@@ -479,7 +481,7 @@ sub transfer_limit {
     my $limit_type = C4::Context->preference('BranchTransferLimitsType');
     my $code;
     if ($limit_type eq 'itemtype') {
-        $code = $item->effective_itemtype;
+        $code = $item->effective_itemtype // '';
     } elsif ($limit_type eq 'ccode') {
         $code = $item->ccode;
     } else {
