@@ -208,6 +208,22 @@ sub update {
             $changes->{changed_fields} = join ',', keys %{$changes};
             $changes->{borrowernumber} = $patron_id;
             
+            if ($changes->{othernames}){
+                my $othernamesmodreq = $changes->{othernames};
+
+                my $checkparams = {
+                    othernames => $othernamesmodreq
+                };
+                my $ok = 1;
+                my $change = {};
+                $change->{othernames} = $othernamesmodreq;
+            
+                $ok = 0 if Koha::Patrons->find($checkparams);
+
+                if(!$ok) {
+                    return $c->render(status => 409, openapi => { error => "Duplicate othernames", conflict => $change });
+                }   
+            }
             Koha::Patron::Modifications->search({ borrowernumber => $patron_id })->delete;
             Koha::Patron::Modification->new($changes)->store();
 
