@@ -221,7 +221,7 @@ sub update {
                     };
                     my $ok = 1;
                     my $change = {}; 
-                    $change->{othernames} = $othernamesmodreq;
+                    $change->{other_name} = $othernamesmodreq;
     
                     $ok = 0 if Koha::Patrons->find($checkparams);
     
