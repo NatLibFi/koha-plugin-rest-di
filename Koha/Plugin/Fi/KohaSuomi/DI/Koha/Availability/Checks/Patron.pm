@@ -120,11 +120,11 @@ sub debt_checkout_guarantees {
     $max_charges = undef unless looks_like_number($max_charges);
     return unless $max_charges;
 
-    my @guarantees = map { $_->guarantee } $patron->guarantee_relationships();
+    my $guarantees = $patron->guarantee_relationships()->guarantees;
     my $guarantees_non_issues_charges = 0;
-    foreach my $g ( @guarantees ) {
+    while (my $g = $guarantees->next() ) {
         $guarantees_non_issues_charges += $g->account->non_issues_charges;
-    }
+    }    
 
     if ($guarantees_non_issues_charges > $max_charges) {
         return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Patron::DebtGuarantees->new(
