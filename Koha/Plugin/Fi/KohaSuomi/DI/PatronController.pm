@@ -28,6 +28,7 @@ use Koha::Patron::Modification;
 use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability;
 use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::Patron;
 use Koha::Plugin::Fi::KohaSuomi::DI::Koha::Patron::Message::Preferences;
+use POSIX qw(strftime);
 
 =head1 Koha::Plugin::Fi::KohaSuomi::DI::PatronController
 
@@ -562,6 +563,12 @@ sub validate_credentials {
 
     my $patron = Koha::Patrons->find({ userid => $userid });
     $patron = Koha::Patrons->find({ cardnumber => $userid }) unless $patron;
+    
+    if ($patron && !$patron->lost) {
+        my $lastseen = strftime "%Y-%m-%d %H:%M:%S", localtime;
+        $patron->update({ lastseen => $lastseen });
+        $patron->store;
+    }
 
     if ($patron && $patron->lost) {
         return $c->render( 
