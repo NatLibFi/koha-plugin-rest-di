@@ -555,6 +555,12 @@ sub validate_credentials {
 
     my $dbh = C4::Context->dbh;
     unless (C4::Auth::checkpw_internal($dbh, $userid, $password)) {
+        
+        my $patron = Koha::Patrons->find({ userid => $userid });
+        if ($patron) {
+            $patron->update({ login_attempts => $patron->login_attempts + 1 });   
+        }
+
         return $c->render(
             status => 401, 
             openapi => { error => "Login failed." }
@@ -564,9 +570,13 @@ sub validate_credentials {
     my $patron = Koha::Patrons->find({ userid => $userid });
     $patron = Koha::Patrons->find({ cardnumber => $userid }) unless $patron;
     
-    if ($patron && !$patron->lost) {
+    my @return = C4::Auth::checkpw_internal( $dbh, $userid, $password);
+    my $passwd_ok = 1 if $return[0] > 0; # 1 or 2
+    
+    if ($patron && !$patron->lost && $passwd_ok) {
         my $lastseen = strftime "%Y-%m-%d %H:%M:%S", localtime;
         $patron->update({ lastseen => $lastseen });
+        $patron->update({ login_attempts => 0 });
         $patron->store;
     }
 
