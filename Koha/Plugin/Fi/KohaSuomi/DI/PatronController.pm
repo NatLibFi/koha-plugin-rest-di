@@ -557,7 +557,7 @@ sub validate_credentials {
     
     my $patron = Koha::Patrons->find({ userid => $userid });
     
-    #try login if account is not locked
+    #Try login if account is not locked
     if ($patron and !$patron->account_locked) {
         
         unless (C4::Auth::checkpw_internal($dbh, $userid, $password)) {
@@ -599,6 +599,10 @@ sub validate_credentials {
     }
     
     #If account locked
+    if ($patron && $patron->account_locked) {
+        $patron->update({ login_attempts => $patron->login_attempts + 1 });   
+    }
+            
     return $c->render(
                 status => 401, 
                 openapi => { error => "Login failed." }
