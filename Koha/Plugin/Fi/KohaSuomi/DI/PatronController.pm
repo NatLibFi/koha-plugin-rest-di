@@ -556,37 +556,20 @@ sub validate_credentials {
     my $dbh = C4::Context->dbh;
     
     my $patron = Koha::Patrons->find({ userid => $userid });
+    $patron = Koha::Patrons->find({ cardnumber => $userid }) unless $patron;
     
-    #Try login if account is not locked
-    if ($patron and !$patron->account_locked) {
-        
-        unless (C4::Auth::checkpw_internal($dbh, $userid, $password)) {
-        
-            my $patron = Koha::Patrons->find({ userid => $userid });
-            if ($patron) {
-                $patron->update({ login_attempts => $patron->login_attempts + 1 });   
-            }
+    if (!$patron || $patron->account_locked || !C4::Auth::checkpw_internal($dbh, $userid, $password)) {
+        $patron->update({ login_attempts => $patron->login_attempts + 1 });
+        return $c->render(
+            status => 401, 
+            openapi => { error => "Login failed." }
+        );
+    }        
 
-            return $c->render(
-                status => 401, 
-                openapi => { error => "Login failed." }
-            );
-        } 
+    # Credentials valid and account not locked
         
-        my $patron = Koha::Patrons->find({ userid => $userid });
-        $patron = Koha::Patrons->find({ cardnumber => $userid }) unless $patron;
-        
-        my @return = C4::Auth::checkpw_internal( $dbh, $userid, $password);
-        my $passwd_ok = 1 if $return[0] > 0; # 1 or 2
-        
-        if ($patron && !$patron->lost && $passwd_ok) {
-            my $lastseen = strftime "%Y-%m-%d %H:%M:%S", localtime;
-            $patron->update({ lastseen => $lastseen });
-            $patron->update({ login_attempts => 0 });
-            $patron->store;
-        }
-
-        if ($patron && $patron->lost) {
+    # Check for lost card and return 403 if so
+    if ($patron->lost) {
             return $c->render( 
                 status => 403, 
                 openapi => { 
@@ -594,19 +577,15 @@ sub validate_credentials {
                 }
             );
         }
+        
+    # Update lastseen and login_attempts
+    my $lastseen = strftime "%Y-%m-%d %H:%M:%S", localtime;
+    $patron->update({ lastseen => $lastseen });
+    $patron->update({ login_attempts => 0 });
+    $patron->store;
 
+    # Return patron information   
     return $c->render(status => 200, openapi => $patron->to_api);  
-    }
-    
-    #If account locked
-    if ($patron && $patron->account_locked) {
-        $patron->update({ login_attempts => $patron->login_attempts + 1 });   
-    }
-            
-    return $c->render(
-                status => 401, 
-                openapi => { error => "Login failed." }
-            );
 }
 
 # Takes a HASHref of parameters
