@@ -558,7 +558,14 @@ sub validate_credentials {
     my $patron = Koha::Patrons->find({ userid => $userid });
     $patron = Koha::Patrons->find({ cardnumber => $userid }) unless $patron;
     
-    if (!$patron || $patron->account_locked || !C4::Auth::checkpw_internal($dbh, $userid, $password)) {
+    if (!$patron) {
+        return $c->render(
+            status => 401, 
+            openapi => { error => "Login failed." }
+        );
+    }
+    
+    if (($patron && $patron->account_locked) || ($patron && !C4::Auth::checkpw_internal($dbh, $userid, $password))) {
         $patron->update({ login_attempts => $patron->login_attempts + 1 });
         return $c->render(
             status => 401, 
