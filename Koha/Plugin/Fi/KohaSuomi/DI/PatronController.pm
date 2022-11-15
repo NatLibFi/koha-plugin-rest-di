@@ -565,8 +565,9 @@ sub validate_credentials {
         );
     }
     
-    if (($patron && $patron->account_locked) || ($patron && !C4::Auth::checkpw_internal($dbh, $userid, $password))) {
+    if ($patron->account_locked || !C4::Auth::checkpw_internal($dbh, $userid, $password)) {
         $patron->update({ login_attempts => $patron->login_attempts + 1 });
+        $patron->store;
         return $c->render(
             status => 401, 
             openapi => { error => "Login failed." }
