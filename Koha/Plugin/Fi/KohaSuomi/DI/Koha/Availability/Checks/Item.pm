@@ -445,13 +445,7 @@ Koha::Exceptions::Item::Transfer additional fields:
 sub transfer {
     my ($self) = @_;
 
-    my $is_cancellable = Koha::Database->new()->schema()->resultset('Branchtransfer')->result_source->has_column('datecancelled');
-    my $transfer = Koha::Item::Transfers->search({
-        itemnumber => $self->item->itemnumber,
-        datesent => { '!=', undef },
-        datearrived => undef,
-        ( $is_cancellable ? ( datecancelled => undef ) : () ),
-    })->next;
+    my $transfer = $self->item->get_transfer;
     if ($transfer) {
         return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::Transfer->new(
             from_library => $transfer->frombranch,
