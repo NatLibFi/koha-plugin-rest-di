@@ -383,6 +383,9 @@ paths:
   "/biblios/{biblio_id}/holdings":
     get:
       operationId: holdingsByBiblioDI
+      description: |
+        Return holdings records for the given biblio record. 
+        N.B. This endpoint requires holdings support in Koha (see Koha bug 20447).
       parameters:
         - $ref: ./openapi/parameters.yaml#/biblio_id_pp
       produces:
