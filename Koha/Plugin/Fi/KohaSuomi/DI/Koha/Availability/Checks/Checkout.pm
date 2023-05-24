@@ -96,8 +96,15 @@ sub no_more_renewals {
     my ($self, $issue) = @_;
 
     return unless $issue;
-    my ($status) = C4::Circulation::CanBookBeRenewed($issue->borrowernumber,
+    my $status;
+    if (C4::Context->preference('Version') ge '22.120000') {
+
+        ($status) = C4::Circulation::CanBookBeRenewed($issue->patron,
+             $issue);
+    } else {
+        ($status) = C4::Circulation::CanBookBeRenewed($issue->borrowernumber,
              $issue->itemnumber);
+    }
     if ($status == 0) {
         return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Checkout::NoMoreRenewals->new;
     }

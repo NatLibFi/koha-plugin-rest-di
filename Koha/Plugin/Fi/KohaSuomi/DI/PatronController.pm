@@ -512,9 +512,15 @@ sub list_checkouts {
 
             $result->{'max_renewals'} = $max_renewals;
             if (!$blocks) {
-                ($can_renew, $blocks) = C4::Circulation::CanBookBeRenewed(
-                    $patron->borrowernumber, $checkout->itemnumber
-                );
+                if (C4::Context->preference('Version') ge '22.120000') {
+                    ($can_renew, $blocks) = C4::Circulation::CanBookBeRenewed(
+                        $patron, $checkout
+                    );
+                } else {
+                    ($can_renew, $blocks) = C4::Circulation::CanBookBeRenewed(
+                        $patron->borrowernumber, $checkout->itemnumber
+                    );
+                }
             }
 
             $result->{'renewable'} = $can_renew ? Mojo::JSON->true : Mojo::JSON->false;

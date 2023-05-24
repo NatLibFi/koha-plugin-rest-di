@@ -176,7 +176,9 @@ sub held {
     my ($self) = @_;
 
     my $item = $self->item;
-    if (my ($s, $reserve) = C4::Reserves::CheckReserves($item->itemnumber)) {
+    if (my ($s, $reserve) = C4::Reserves::CheckReserves(C4::Context->preference('Version') ge '22.120000'
+                ? $item
+                : $item->itemnumber)) {
         if (!$reserve) {
             return;
         }
