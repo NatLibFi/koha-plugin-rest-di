@@ -176,7 +176,7 @@ sub held {
     my ($self) = @_;
 
     my $item = $self->item;
-    if (my ($s, $reserve) = C4::Reserves::CheckReserves($item->itemnumber)) {
+    if (my ($s, $reserve) = C4::Reserves::CheckReserves($item)) {
         if (!$reserve) {
             return;
         }
