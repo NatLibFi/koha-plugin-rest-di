@@ -74,7 +74,7 @@ paths:
         - application/json
       responses:
         200:
-          description: Article requet availability information for items of biblio.
+          description: Article request availability information for items of biblio.
           schema:
             properties:
               availability:
