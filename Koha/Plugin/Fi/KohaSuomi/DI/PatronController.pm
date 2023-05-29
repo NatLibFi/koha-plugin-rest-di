@@ -554,10 +554,7 @@ sub validate_credentials {
     }
 
     my $dbh = C4::Context->dbh;
-    unless (C4::Context->preference('Version') ge '22.110000'
-                ? C4::Auth::checkpw_internal($userid, $password)
-                : C4::Auth::checkpw_internal($dbh, $userid, $password)
-        ) {
+    unless (C4::Auth::checkpw_internal($userid, $password)) {
         return $c->render(
             status => 401, 
             openapi => { error => "Login failed." }
