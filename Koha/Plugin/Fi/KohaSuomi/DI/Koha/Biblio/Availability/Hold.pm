@@ -168,7 +168,10 @@ sub _item_looper {
         found => undef,
         borrowernumber => $patron->borrowernumber,
     })->as_list if $patron;
-    $self->{'hold_queue_length'} = scalar(@holds) || 0;
+    
+    $self->{'hold_queue_length'} = Koha::Holds->search({
+        biblionumber => $biblio->biblionumber
+    })->count;
 
     my $opachiddenitems_rules = C4::Context->yaml_preference('OpacHiddenItems');
 

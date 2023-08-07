@@ -31,7 +31,7 @@ properties:
       - string
       - "null"
   hold_queue_length:
-    description: number of holdings placed on title/item
+    description: Hold queue length for the item
     type:
       - integer
       - "null"
