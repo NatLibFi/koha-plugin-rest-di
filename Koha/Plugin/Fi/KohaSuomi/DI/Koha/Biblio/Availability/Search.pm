@@ -110,8 +110,9 @@ sub _item_looper {
         ? C4::Context->preference('MaxSearchResultsItemsPerRecordStatusCheck') : undef;
     my $count = 0;
 
-    my @holds = Koha::Holds->search({ biblionumber => $self->biblio->biblionumber })->as_list;
-    $self->{'hold_queue_length'} = scalar(@holds) || 0;
+    $self->{'hold_queue_length'} = Koha::Holds->search({
+        biblionumber => $self->biblio->biblionumber
+    })->count;
 
     foreach my $item (@items) {
         # Break out of loop after $limit items are found available

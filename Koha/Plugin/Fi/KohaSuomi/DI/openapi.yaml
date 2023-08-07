@@ -165,6 +165,7 @@ paths:
               - $ref: ./openapi/definitions.yaml#/availability~1biblio
               - properties:
                   hold_queue_length:
+                    description: Hold queue length for the biblio
                     minimum: 0
                     type: integer
                 type: object
