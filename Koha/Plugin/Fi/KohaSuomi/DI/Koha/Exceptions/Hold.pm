@@ -11,6 +11,10 @@ use Exception::Class (
         isa =>  'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Hold',
         description => "Item level hold is not allowed.",
     },
+     'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Hold::OnlyItemLevelHoldAllowed' => {
+        isa =>  'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Hold',
+        description => "Patron has existing item level hold(s). Biblio level hold not allowed.",
+    },
      'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Hold::MaximumHoldsReached' => {
         isa =>  'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Hold',
         description => "Maximum number of holds have been reached.",

@@ -168,10 +168,17 @@ sub _item_looper {
         found => undef,
         borrowernumber => $patron->borrowernumber,
     })->as_list if $patron;
-    
+
     $self->{'hold_queue_length'} = Koha::Holds->search({
         biblionumber => $biblio->biblionumber
     })->count;
+
+    # First check for existing item level holds which would prevent a biblio level hold
+    foreach my $hold (@holds) {
+        if ($hold->item_level_hold) {
+            $self->unavailable(Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Biblio::OnlyItemLevelHoldAllowed->new);
+        }            
+    }
 
     my $opachiddenitems_rules = C4::Context->yaml_preference('OpacHiddenItems');
 
