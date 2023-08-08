@@ -163,11 +163,7 @@ sub _item_looper {
         borrowernumber => $patron->borrowernumber,
     })->as_list if $patron;
 
-    my @nonfound_holds = $self->{'ignore_patron_holds'} ? () : Koha::Holds->search({
-        biblionumber => $biblio->biblionumber,
-        found => undef,
-        borrowernumber => $patron->borrowernumber,
-    })->as_list if $patron;
+    my @nonfound_holds = map { $_->found ? () : $_ } @holds;
 
     $self->{'hold_queue_length'} = Koha::Holds->search({
         biblionumber => $biblio->biblionumber
