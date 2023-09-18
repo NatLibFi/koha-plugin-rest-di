@@ -176,7 +176,8 @@ sub to_api {
     my $hash = $item->to_api;
     $hash->{'availability'} = $availability;
     $hash->{'hold_queue_length'} = Koha::Holds->search({
-        itemnumber => $item->itemnumber
+        itemnumber => $item->itemnumber,
+        found => undef
     })->count;
     $hash->{'collection_code_description'} = $ccode_desc;
     $hash->{'location_description'} = $loc_desc;

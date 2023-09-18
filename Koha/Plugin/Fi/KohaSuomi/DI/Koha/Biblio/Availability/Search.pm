@@ -111,7 +111,8 @@ sub _item_looper {
     my $count = 0;
 
     $self->{'hold_queue_length'} = Koha::Holds->search({
-        biblionumber => $self->biblio->biblionumber
+        biblionumber => $self->biblio->biblionumber,
+        found => undef
     })->count;
 
     foreach my $item (@items) {

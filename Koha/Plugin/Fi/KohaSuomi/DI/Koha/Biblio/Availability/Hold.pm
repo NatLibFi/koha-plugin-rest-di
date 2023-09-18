@@ -166,7 +166,8 @@ sub _item_looper {
     my @nonfound_holds = map { $_->found ? () : $_ } @holds;
 
     $self->{'hold_queue_length'} = Koha::Holds->search({
-        biblionumber => $biblio->biblionumber
+        biblionumber => $biblio->biblionumber,
+        found => undef
     })->count;
 
     # First check for existing item level holds which would prevent a biblio level hold
