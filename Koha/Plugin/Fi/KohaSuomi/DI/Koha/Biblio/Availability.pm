@@ -72,9 +72,12 @@ sub new {
     # ARRAYref of Koha::Item::Availability objects
     # ...for available items
     $self->{'item_availabilities'} = [];
-    # ...for unavailabile items
+    # ...for unavailable items
     $self->{'item_unavailabilities'} = [];
 
+    # Optionally include found holds in hold queue length calculation.
+    $self->{'include_found_in_hold_queue'} = $params->{'include_found_in_hold_queue'};
+ 
     if (exists $params->{'biblio'}) {
         unless (ref($params->{'biblio'}) eq 'Koha::Biblio') {
             Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::BadParameter->throw(
@@ -178,6 +181,25 @@ sub to_api {
         $hash->{'hold_queue_length'} = 0+$self->{'hold_queue_length'};
     }
     return $hash;
+}
+
+=head3 get_hold_queue_length
+
+Get hold queue length for the biblio
+
+=cut
+
+sub get_hold_queue_length
+{
+    my ($self) = @_;
+
+    my $hold_params = {
+        biblionumber => $self->biblio->biblionumber,
+    };
+    if (!$self->{'include_found_in_hold_queue'}) {
+        $hold_params->{found} = undef;
+    }
+    return Koha::Holds->search($hold_params)->count;
 }
 
 1;

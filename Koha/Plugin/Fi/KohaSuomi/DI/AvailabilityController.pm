@@ -94,6 +94,7 @@ sub biblio_hold {
     my $query_pickup_locations = $c->validation->param('query_pickup_locations');
     my $ignore_patron_holds = $c->validation->param('ignore_patron_holds');
     my $limit_items = $c->validation->param('limit_items');
+    my $include_found_in_hold_queue = $c->validation->param('include_found_in_hold_queue');
 
     return try {
         my $patron = Koha::Patrons->find($borrowernumber);
@@ -104,6 +105,7 @@ sub biblio_hold {
 
         $params->{'query_pickup_locations'} = 1 if $query_pickup_locations;
         $params->{'ignore_patron_holds'} = 1 if $ignore_patron_holds;
+        $params->{'include_found_in_hold_queue'} = 1 if $include_found_in_hold_queue;
         $params->{'to_branch'} = $to_branch if $to_branch;
         $params->{'limit'} = $limit_items if $limit_items;
 
@@ -137,13 +139,16 @@ sub biblio_search {
     my $c = shift->openapi->valid_input or return;
 
     my $biblionumber = $c->validation->param('biblio_id');
+    my $include_found_in_hold_queue = $c->validation->param('include_found_in_hold_queue');
 
     return try {
         my $availability = undef;
         if (my $biblio = Koha::Biblios->find($biblionumber)) {
-            $availability = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Search->biblio({
-                biblio => $biblio
-            });
+            my $params = {
+                biblio => $biblio,
+            };
+            $params->{'include_found_in_hold_queue'} = 1 if $include_found_in_hold_queue;
+            $availability = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Search->biblio($params);
             return $c->render(status => 200, openapi => $availability->in_opac->to_api);
         }
 
@@ -251,6 +256,7 @@ sub item_hold {
     my $borrowernumber = $c->validation->param('patron_id');
     my $query_pickup_locations = $c->validation->param('query_pickup_locations');
     my $to_branch = $c->validation->param('library_id');
+    my $include_found_in_hold_queue = $c->validation->param('include_found_in_hold_queue');
 
     return try {
         my $patron = Koha::Patrons->find($borrowernumber);
@@ -265,6 +271,8 @@ sub item_hold {
         if ($to_branch) {
             $params->{'to_branch'} = $to_branch;
         }
+        $params->{'include_found_in_hold_queue'} = 1 if $include_found_in_hold_queue;
+
         my $availability = undef;
         if (my $item = Koha::Items->find($itemnumber)) {
             $params->{'item'} = $item;

@@ -70,6 +70,9 @@ sub new {
     $self->{'item'} = undef;
     $self->{'patron'} = undef;
 
+    # Optionally include found holds in hold queue length calculation.
+    $self->{'include_found_in_hold_queue'} = $params->{'include_found_in_hold_queue'};
+
     if (exists $params->{'item'}) {
         unless (ref($params->{'item'}) eq 'Koha::Item') {
             Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::BadParameter->throw(
@@ -175,13 +178,29 @@ sub to_api {
     $loc_desc   = $loc_desc->lib if defined $loc_desc;
     my $hash = $item->to_api;
     $hash->{'availability'} = $availability;
-    $hash->{'hold_queue_length'} = Koha::Holds->search({
-        itemnumber => $item->itemnumber,
-        found => undef
-    })->count;
+    $hash->{'hold_queue_length'} = $self->get_hold_queue_length();
     $hash->{'collection_code_description'} = $ccode_desc;
     $hash->{'location_description'} = $loc_desc;
     return $hash;
+}
+
+=head3 get_hold_queue_length
+
+Get hold queue length for the item
+
+=cut
+
+sub get_hold_queue_length
+{
+    my ($self) = @_;
+
+    my $hold_params = {
+        itemnumber => $self->item->itemnumber,
+    };
+    if (!$self->{'include_found_in_hold_queue'}) {
+        $hold_params->{found} = undef;
+    }
+    return Koha::Holds->search($hold_params)->count;
 }
 
 1;

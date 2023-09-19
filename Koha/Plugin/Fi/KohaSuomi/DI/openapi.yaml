@@ -155,6 +155,11 @@ paths:
           name: limit_items
           required: false
           type: integer
+        - description: "Whether to include found holds in hold queue length. 1 = yes, 0 or no parameter = no."
+          in: query
+          name: include_found_in_hold_queue
+          required: false
+          type: integer
       produces:
         - application/json
       responses:
@@ -207,6 +212,11 @@ paths:
       operationId: searchBiblioAvailabilityDI
       parameters:
         - $ref: ./openapi/parameters.yaml#/biblio_id_pp
+        - description: "Whether to include found holds in hold queue length. 1 = yes, 0 or no parameter = no."
+          in: query
+          name: include_found_in_hold_queue
+          required: false
+          type: integer
       produces:
         - application/json
       responses:
@@ -341,6 +351,11 @@ paths:
         - description: 'Return available pickup location(s) for each item. 1 = yes, 0 or no parameter = no.'
           in: query
           name: query_pickup_locations
+          required: false
+          type: integer
+        - description: "Whether to include found holds in hold queue length. 1 = yes, 0 or no parameter = no."
+          in: query
+          name: include_found_in_hold_queue
           required: false
           type: integer
       produces:
