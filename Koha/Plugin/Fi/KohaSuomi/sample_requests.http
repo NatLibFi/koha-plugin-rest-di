@@ -38,7 +38,12 @@ Authorization: Bearer {{token}}
 
 ###
 # @name hold_availability
-GET {{baseUrl}}/contrib/kohasuomi/availability/biblios/2/hold?patron_id=57 HTTP/1.1
+GET {{baseUrl}}/contrib/kohasuomi/availability/biblios/2/hold?patron_id=57&include_found_in_hold_queue=0 HTTP/1.1
+Authorization: Bearer {{token}}
+
+###
+# @name item_hold_availability
+GET {{baseUrl}}/contrib/kohasuomi/availability/items/30/hold?patron_id=57&include_found_in_hold_queue=1 HTTP/1.1
 Authorization: Bearer {{token}}
 
 ###
@@ -47,9 +52,16 @@ GET {{baseUrl}}/contrib/kohasuomi/availability/biblios/2/hold?patron_id=57&ignor
 Authorization: Bearer {{token}}
 
 ###
-# @name patron_status
-GET {{baseUrl}}/contrib/kohasuomi/patrons/1?query_messaging_preferences=1 HTTP/1.1
+# @name patron_information
+GET {{baseUrl}}/patrons/57 HTTP/1.1
 Authorization: Bearer {{token}}
+X-Koha-Embed: extended_attributes
+
+###
+# @name patron_status
+GET {{baseUrl}}/contrib/kohasuomi/patrons/57?query_messaging_preferences=1 HTTP/1.1
+Authorization: Bearer {{token}}
+X-Koha-Embed: extended_attributes
 
 ###
 # @name patron_article_requests
@@ -90,3 +102,9 @@ Authorization: Bearer {{token}}
 # @name course_reserves_course_1
 GET {{baseUrl}}/contrib/kohasuomi/coursereserves?course_id=1&_page=1 HTTP/1.1
 Authorization: Bearer {{token}}
+
+###
+# @name items with strings
+GET {{baseUrl}}/biblios/2/items
+Authorization: Bearer {{token}}
+x-koha-embed: +strings
