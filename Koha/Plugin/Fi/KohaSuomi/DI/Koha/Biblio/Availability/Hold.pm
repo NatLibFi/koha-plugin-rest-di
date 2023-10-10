@@ -170,7 +170,7 @@ sub _item_looper {
     # First check for existing item level holds which would prevent a biblio level hold
     foreach my $hold (@holds) {
         if ($hold->item_level_hold) {
-            $self->unavailable(Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Biblio::OnlyItemLevelHoldAllowed->new);
+            $self->unavailable(Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Hold::OnlyItemLevelHoldAllowed->new);
         }            
     }
 
