@@ -19,7 +19,7 @@ use Modern::Perl;
 
 use Mojo::Base 'Mojolicious::Controller';
 
-use C4::Auth qw( haspermission );
+use C4::Auth qw( checkpw haspermission track_login_daily );
 
 use Koha::Biblios;
 use Koha::Patron::Messages;
@@ -553,8 +553,8 @@ sub validate_credentials {
         );
     }
 
-    my $dbh = C4::Context->dbh;
-    unless (C4::Auth::checkpw_internal($userid, $password)) {
+    my ($ret) = checkpw( $userid, $password, undef, undef, 1 );
+    if (!$ret) {
         return $c->render(
             status => 401, 
             openapi => { error => "Login failed." }
@@ -564,7 +564,19 @@ sub validate_credentials {
     my $patron = Koha::Patrons->find({ userid => $userid });
     $patron = Koha::Patrons->find({ cardnumber => $userid }) unless $patron;
 
-    if ($patron && $patron->lost) {
+    if (!$patron) {
+        # This should never happen
+        return $c->render(
+            status => 401, 
+            openapi => { error => "Login failed." }
+        );
+    }
+
+    # Update last login date after retrieving patron so that
+    # the previous date is returned:
+    track_login_daily($patron->userid);
+
+    if ($patron->lost) {
         return $c->render( 
             status => 403, 
             openapi => { 
