@@ -250,10 +250,7 @@ sub high_hold {
     return unless C4::Context->preference('decreaseLoanHighHolds');
 
     my $item = $self->item;
-    my $check = C4::Circulation::checkHighHolds(
-        $item->unblessed,
-        $patron->unblessed
-    );
+    my $check = C4::Circulation::checkHighHolds($item, $patron);
 
     if ($check->{exceeded}) {
         return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::HighHolds->new(
