@@ -62,11 +62,7 @@ sub invalid_due_date {
         my $issuedate = $now->clone();
 
         my $branch = C4::Circulation::_GetCircControlBranch($item, $patron);
-        $duedate = C4::Circulation::CalcDateDue
-        (
-            $issuedate, $item->effective_itemtype, $branch, $patron->unblessed,
-            undef, $item
-        );
+        $duedate = C4::Circulation::CalcDateDue($issuedate, $item->effective_itemtype, $branch, $patron->unblessed, undef, $item);
     }
     if ($duedate) {
         my $today = $now->clone->truncate(to => 'minute');

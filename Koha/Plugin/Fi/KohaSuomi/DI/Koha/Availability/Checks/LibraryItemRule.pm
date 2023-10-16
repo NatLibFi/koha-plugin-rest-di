@@ -54,14 +54,11 @@ sub new {
     my $circ_control_branch;
     my $branchitemrule;
     if ($circcontrol eq 'ItemHomeLibrary' && $item) {
-        $circ_control_branch = C4::Circulation::_GetCircControlBranch(
-                                $item->unblessed, undef);
+        $circ_control_branch = C4::Circulation::_GetCircControlBranch($item, undef);
     } elsif ($circcontrol eq 'PatronLibrary' && $patron) {
-        $circ_control_branch = C4::Circulation::_GetCircControlBranch(
-                                undef, $patron->unblessed);
+        $circ_control_branch = C4::Circulation::_GetCircControlBranch(undef, $patron);
     } elsif ($circcontrol eq 'PickupLibrary') {
-        $circ_control_branch = C4::Circulation::_GetCircControlBranch(
-                                undef, undef);
+        $circ_control_branch = C4::Circulation::_GetCircControlBranch(undef, undef);
     } else {
         bless $self, $class;
         $self->{'branchitemrule'} = undef;

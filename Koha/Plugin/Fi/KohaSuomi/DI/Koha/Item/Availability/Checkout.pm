@@ -69,10 +69,7 @@ sub in_intranet {
         );
     }
 
-    my $branchcode = C4::Circulation::_GetCircControlBranch
-    (
-        $item->unblessed,$patron->unblessed
-    );
+    my $branchcode = C4::Circulation::_GetCircControlBranch($item, $patron);
     my $checkoutcalc = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::Checkout->new;
     my $duedate = $self->duedate;
     if ($duedate &&

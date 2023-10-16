@@ -482,9 +482,13 @@ sub list_checkouts {
         while (my $checkout = $checkouts->next) {
             # Need to use the unblessed object to access joined fields
             my $checkout_ub = $checkout->unblessed;
+
             # _GetCircControlBranch takes an item, but we have all the required item
-            # fields in $checkout
-            my $branchcode   = C4::Circulation::_GetCircControlBranch($checkout_ub, $patron->unblessed);
+            # fields in $checkout, so create a fake item with the required fields:
+            my $checkout_item = Koha::Item->new();
+            $checkout_item->homebranch($checkout_ub->{'homebranch'});
+            $checkout_item->holdingbranch($checkout_ub->{'holdingbranch'});
+            my $branchcode = C4::Circulation::_GetCircControlBranch($checkout_item, $patron);
 
             my $itype = $item_level_itypes && $checkout_ub->{'item_itype'}
                 ? $checkout_ub->{'item_itype'} : $checkout_ub->{'biblio_itype'};
