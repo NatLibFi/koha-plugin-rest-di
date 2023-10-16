@@ -27,7 +27,7 @@ our $metadata = {
     date_authored   => '2020-06-03',
     date_updated    => '1900-01-01',
     minimum_version => '22.12.00.036',
-    maximum_version => undef,
+    maximum_version => '23.06.00.021',
     version         => $VERSION,
     description     => 'This plugin implements API endpoints required'
                      . ' for the integration of advanced discovery interfaces'
