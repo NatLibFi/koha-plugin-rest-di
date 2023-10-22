@@ -19,7 +19,7 @@ use Modern::Perl;
 
 use Mojo::Base 'Mojolicious::Controller';
 
-use C4::Auth qw( checkpw haspermission track_login_daily );
+use C4::Auth qw( checkpw haspermission );
 
 use Koha::Biblios;
 use Koha::Patron::Messages;
@@ -578,7 +578,7 @@ sub validate_credentials {
 
     # Update last login date after retrieving patron so that
     # the previous date is returned:
-    track_login_daily($patron->userid);
+    $patron->update_lastseen('login');
 
     if ($patron->lost) {
         return $c->render( 
