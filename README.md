@@ -2,7 +2,7 @@
 
 This is a REST API plugin for Koha. It provides extended API support for Discovery Interfaces such as VuFind.
 
-Note that this plugin requires Koha functionality that is only available from Koha 23.05. Releases for other versions are also available.
+Note that this plugin requires Koha functionality that is only available from Koha 23.11. Releases for other versions are also available.
 
 Most of the functionality has been ported from the KohaSuomi version of Koha (see  https://github.com/KohaSuomi/Koha).
 
