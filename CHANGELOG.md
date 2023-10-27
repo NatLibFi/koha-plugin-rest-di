@@ -12,6 +12,12 @@ This is the first build in anticipation of Koha 23.11.
 
 - Updated for compatibility with patron activity tracking (bugs 32496 and 15504).
 
+## [23.05.07] - 2023-10-27
+
+### Fixed
+
+- Fixed compatibility with Koha bug 29562. This caused an error if the decreaseLoanHighHolds syspref was enabled.
+
 ## [23.05.06] - 2023-10-10
 
 ### Changed
