@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [23.11.01] - 2023-10-27
+
+### Fixed
+
+- Fixed compatibility with Koha bug 29562. This caused an error if the decreaseLoanHighHolds syspref was enabled.
+
 ## [23.11.00] - 2023-10-27
 
 This is the first build in anticipation of Koha 23.11.
