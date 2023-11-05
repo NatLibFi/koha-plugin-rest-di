@@ -383,7 +383,7 @@ sub _patron_hold_count {
     my $branchfield = 'me.branchcode';
     $controlbranch ||= C4::Context->preference('ReservesControlBranch');
 
-    # Note: Reserve schema has confusing names for relationships (borrowernumber, biblionumber, itemnumber), 
+    # Note: Reserve schema has confusing names for relationships (borrowernumber, biblionumber, itemnumber),
     # so try to play along.
     my $patron = $self->patron;
     if ($self->patron && $controlbranch eq 'PatronLibrary') {

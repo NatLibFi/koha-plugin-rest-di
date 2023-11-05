@@ -84,8 +84,8 @@ sub get_serial_subscriptions {
 
     # Can't use a join here since subscriptions and serials are missing proper relationship in the database.
     my @all_serials;
-    my $subscriptions = Koha::Subscriptions->search( 
-        { 
+    my $subscriptions = Koha::Subscriptions->search(
+        {
             biblionumber => $c->validation->param('biblio_id')
         },
         {
@@ -94,8 +94,8 @@ sub get_serial_subscriptions {
     );
     while (my $subscription = $subscriptions->next()) {
         my $serials = Koha::Serials->search(
-            { 
-                subscriptionid => $subscription->subscriptionid 
+            {
+                subscriptionid => $subscription->subscriptionid
             },
             {
                 select => [ qw( serialid serialseq serialseq_x serialseq_y serialseq_z publisheddate publisheddatetext notes ) ],
@@ -106,8 +106,8 @@ sub get_serial_subscriptions {
         );
         if ($serials->count > 0) {
             my $record = {
-                subscription_id => $subscription->subscriptionid, 
-                biblio_id       => $subscription->biblionumber, 
+                subscription_id => $subscription->subscriptionid,
+                biblio_id       => $subscription->biblionumber,
                 library_id      => $subscription->branchcode,
                 location        => $subscription->location,
                 callnumber      => $subscription->callnumber,

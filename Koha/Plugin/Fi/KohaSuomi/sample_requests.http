@@ -1,6 +1,6 @@
 # These requests can be used with VSCode REST Client plugin.
 
-# Use login to get an OAuth2 token, then use it in the authorization header. 
+# Use login to get an OAuth2 token, then use it in the authorization header.
 
 # Settings (set in VSCode settings.json file or uncomment and set below).
 # Example settings.json:
@@ -9,7 +9,7 @@
 #        "local": {
 #            "baseUrl": "http://localhost/api/v1",
 #            "clientId": "12345678-abcd-1234-abcd-1234567890ab",
-#            "clientSecret": "23456789-abcd-1234-abcd-1234567890ab" 
+#            "clientSecret": "23456789-abcd-1234-abcd-1234567890ab"
 #        }
 #    }
 #}
@@ -23,7 +23,7 @@
 # OAuth2 token, retrieved from login request:
 @token = {{login.response.body.access_token}}
 
-### 
+###
 # @name login
 POST {{baseUrl}}/oauth/token HTTP/1.1
 Accept: application/json

@@ -77,7 +77,7 @@ sub new {
     # to generate a list of available pickup locations.
     # Don't provide the following parameter if you want to skip this step.
     $self->{'query_pickup_locations'} = $params->{'query_pickup_locations'};
-    # Optionally ignore existing holds for the given patron. Useful for 
+    # Optionally ignore existing holds for the given patron. Useful for
     # calculating possible pickup locations for updating an existing hold.
     $self->{'ignore_patron_holds'} = $params->{'ignore_patron_holds'};
     # Additionally, consider any transfer limits to pickup library by
@@ -171,7 +171,7 @@ sub _item_looper {
     foreach my $hold (@holds) {
         if ($hold->item_level_hold) {
             $self->unavailable(Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Hold::OnlyItemLevelHoldAllowed->new);
-        }            
+        }
     }
 
     my $opachiddenitems_rules = C4::Context->yaml_preference('OpacHiddenItems');

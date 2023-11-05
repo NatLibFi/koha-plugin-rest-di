@@ -112,8 +112,8 @@ sub get {
 
         if ($c->validation->param('query_messaging_preferences')) {
             if ( ! C4::Context->preference('EnhancedMessagingPreferences') ) {
-                return $c->render( 
-                    status => 403, 
+                return $c->render(
+                    status => 403,
                     openapi => { error => "Enhanced messaging preferences are not enabled" }
                 );
             }
@@ -176,7 +176,7 @@ sub update {
     my $c = shift->openapi->valid_input or return;
 
     if (!C4::Context->preference('OPACPatronDetails')) {
-        return $c->render( 
+        return $c->render(
             status => 403,
             openapi => { error => "Preferences do not allow changing patrons details"}
         );
@@ -207,7 +207,7 @@ sub update {
             }
             $changes->{changed_fields} = join ',', keys %{$changes};
             $changes->{borrowernumber} = $patron_id;
-            
+
             Koha::Patron::Modifications->search({ borrowernumber => $patron_id })->delete;
             Koha::Patron::Modification->new($changes)->store();
 
@@ -253,7 +253,7 @@ sub purge_checkout_history {
             'me.borrowernumber' => $borrowernumber
         });
         $patron->old_checkouts->anonymize;
-        
+
         return $c->render( status => 204, openapi => {} );
     }
     catch {
@@ -277,15 +277,15 @@ sub edit_messaging_preferences {
     my $c = shift->openapi->valid_input or return;
 
     if (!C4::Context->preference('EnhancedMessagingPreferences')) {
-        return $c->render( 
-            status => 403, 
+        return $c->render(
+            status => 403,
             openapi => { error => "Enhanced messaging preferences are not enabled" }
         );
     }
 
     if (!C4::Context->preference('EnhancedMessagingPreferencesOPAC')) {
-        return $c->render( 
-            status => 403, 
+        return $c->render(
+            status => 403,
             openapi => { error => "Updating of enhanced messaging preferences in OPAC not enabled" }
         );
     }
@@ -405,7 +405,7 @@ sub list_checkouts {
                 'biblio.title', 'biblio.subtitle', 'biblio.part_number', 'biblio.part_name', 'biblio.unititle', 'biblio.copyrightdate'
             ],
             '+as' => [
-                'item_itype', 'homebranch', 'holdingbranch', 'ccode', 'permanent_location', 
+                'item_itype', 'homebranch', 'holdingbranch', 'ccode', 'permanent_location',
                 'enumchron', 'serial_issue_number', 'biblionumber', 'external_id',
                 'biblio_itype', 'publication_year',
                 'title', 'subtitle', 'part_number', 'part_name', 'uniform_title', 'copyright_date'
@@ -497,9 +497,9 @@ sub list_checkouts {
             if ($patron_blocks) {
                 $can_renew = 0;
                 $blocks = $patron_blocks;
-            } 
+            }
             my $circ_rule = Koha::CirculationRules->get_effective_rule(
-                {   
+                {
                     rule_name    => 'renewalsallowed',
                     categorycode => $patron->categorycode,
                     itemtype     => $itype,
@@ -549,8 +549,8 @@ sub validate_credentials {
     my $password = $body->{password};
 
     unless ($userid) {
-        return $c->render( 
-            status => 400, 
+        return $c->render(
+            status => 400,
             openapi => {
                 error => "Either userid or cardnumber is required."
             }
@@ -560,7 +560,7 @@ sub validate_credentials {
     my ($ret) = checkpw( $userid, $password, undef, undef, 1 );
     if (!$ret) {
         return $c->render(
-            status => 401, 
+            status => 401,
             openapi => { error => "Login failed." }
         );
     }
@@ -571,7 +571,7 @@ sub validate_credentials {
     if (!$patron) {
         # This should never happen
         return $c->render(
-            status => 401, 
+            status => 401,
             openapi => { error => "Login failed." }
         );
     }
@@ -581,10 +581,10 @@ sub validate_credentials {
     $patron->update_lastseen('login');
 
     if ($patron->lost) {
-        return $c->render( 
-            status => 403, 
-            openapi => { 
-                error => "Patron's card has been marked as 'lost'. Access forbidden." 
+        return $c->render(
+            status => 403,
+            openapi => {
+                error => "Patron's card has been marked as 'lost'. Access forbidden."
             }
         );
     }

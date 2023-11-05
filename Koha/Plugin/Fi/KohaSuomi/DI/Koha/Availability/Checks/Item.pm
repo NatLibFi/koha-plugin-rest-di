@@ -320,7 +320,7 @@ sub notforloan {
             if ($av->count) {
                 $av = $av->next;
                 $code = $av->lib_opac || $av->lib;
-            } 
+            }
         }
         if ($item->notforloan > 0) {
             return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::NotForLoan->new(

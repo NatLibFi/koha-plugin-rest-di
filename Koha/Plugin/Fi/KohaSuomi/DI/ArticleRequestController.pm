@@ -80,7 +80,7 @@ sub list {
 
         my $requests = $ar_rs->search( $filtered_params, $attributes );
         my $total = $ar_rs->search( {borrowernumber => $c->validation->param('patron_id') } )->count;
-        
+
         $c->add_pagination_headers(
             {
                 total      => ($requests->is_paged ? $requests->pager->total_entries : $requests->count),
@@ -133,16 +133,16 @@ sub add {
     }
 
     if (my $problem = _opac_patron_restrictions($c, $patron)) {
-        return $c->render( 
-            status => 403, 
-            openapi => { error => "Request cannot be placed. Reason: $problem" } 
+        return $c->render(
+            status => 403,
+            openapi => { error => "Request cannot be placed. Reason: $problem" }
         );
     }
 
     unless ($biblio_id or $item_id) {
-        return $c->render( 
-            status => 400, 
-            openapi => { error => "At least one of biblio_id, item_id should be given" } 
+        return $c->render(
+            status => 400,
+            openapi => { error => "At least one of biblio_id, item_id should be given" }
         );
     }
 
@@ -150,9 +150,9 @@ sub add {
         my $item = Koha::Items->find($item_id);
         my $item_biblio_id = $item->biblionumber;
         if ($biblio_id and $biblio_id != $item_biblio_id) {
-            return $c->render( 
-                status => 400, 
-                openapi => { error => "Item $item_id doesn't belong to biblio $biblio_id" } 
+            return $c->render(
+                status => 400,
+                openapi => { error => "Item $item_id doesn't belong to biblio $biblio_id" }
             );
         }
         $biblio_id ||= $item_biblio_id;
@@ -185,9 +185,9 @@ sub edit {
     my $request = Koha::ArticleRequests->find($request_id);
 
     unless ($request && $request->borrowernumber == $c->validation->param('patron_id')) {
-        return $c->render( 
+        return $c->render(
             status  => 404,
-            openapi => { error => "Request not found" } 
+            openapi => { error => "Request not found" }
         );
     }
 
@@ -197,7 +197,7 @@ sub edit {
 
     $request->branchcode($library_id) if ($library_id);
     $request->store();
-    
+
     return $c->render( status => 200, openapi => $request->to_api );
 }
 
@@ -210,22 +210,22 @@ sub delete {
     unless ($request && $request->borrowernumber == $c->validation->param('patron_id')
         && $request->status ne Koha::ArticleRequest::Status::Canceled
     ) {
-        return $c->render( 
+        return $c->render(
             status  => 404,
-            openapi => { error => "Request not found" } 
+            openapi => { error => "Request not found" }
         );
     }
 
     if (my $problem = _opac_patron_restrictions($c, $request->borrowernumber)) {
-        return $c->render( 
-            status => 403, 
-            openapi => { error => "Request cannot be cancelled. Reason: $problem" } 
+        return $c->render(
+            status => 403,
+            openapi => { error => "Request cannot be cancelled. Reason: $problem" }
         );
     }
 
     if (!_can_request_be_canceled_from_opac($request, $request->borrowernumber)) {
-        return $c->render( 
-            status  => 403, 
+        return $c->render(
+            status  => 403,
             openapi => { error => "Request cannot be cancelled by patron." }
         );
     }
@@ -278,7 +278,7 @@ sub _can_request_be_canceled_from_opac {
     my ($request, $borrowernumber) = @_;
 
     return unless $request and $borrowernumber;
-    
+
     return 0 unless $request->borrowernumber == $borrowernumber;
     return 0 if ( $request->status ne 'PENDING' );
 

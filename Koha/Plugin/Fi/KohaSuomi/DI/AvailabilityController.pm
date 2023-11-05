@@ -35,7 +35,7 @@ A class implementing the controller methods for the availability-related API
 
 =head2 Class Methods
 
-=head3 
+=head3
 
 =cut
 
@@ -183,7 +183,7 @@ sub item_article_request {
         if (my $item = Koha::Items->find($itemnumber)) {
             $params->{'item'} = $item;
             $availability = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::ArticleRequest->item($params);
-    
+
             return $c->render(status => 200, openapi => $availability->in_opac->to_api);
         }
 

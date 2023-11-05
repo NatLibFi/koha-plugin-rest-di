@@ -37,7 +37,7 @@ To use all the functionality the plugin provides, the following permissions are 
  - circulate_remaining_permissions
  - catalogue
  - borrowers
-   - edit_borrowers 
+   - edit_borrowers
    - view_borrower_infos_from_any_libraries
  - reserveforothers
  - modify_holds_priority
@@ -55,7 +55,7 @@ If you need to use the plugin without a KPZ package (e.g. to use a version clone
 3. Symlink the DI.pm file and DI directory to the Koha/Plugin/Fi/KohaSuomi/ directory.
 4. Add data for the plugin to Koha's MySQL database:
 
-        insert into plugin_methods (plugin_class, plugin_method) values 
+        insert into plugin_methods (plugin_class, plugin_method) values
             ('Koha::Plugin::Fi::KohaSuomi::DI', 'abs_path'),
             ('Koha::Plugin::Fi::KohaSuomi::DI', 'api_namespace'),
             ('Koha::Plugin::Fi::KohaSuomi::DI', 'api_routes'),

@@ -54,8 +54,8 @@ sub getDepartments {
         { department => { '!=', undef }, enabled => 'yes' },
         { select => 'department' }
     );
-    my $attributes = { 
-        where => { 
+    my $attributes = {
+        where => {
             category => 'DEPARTMENT',
             authorised_value => { '-in' => $courses->as_query }
         }
@@ -67,7 +67,7 @@ sub getInstructors {
     my $c = shift->openapi->valid_input or return;
 
     my $attributes = {
-        join => { 
+        join => {
             course_instructors => 'course',
         },
         where => {
@@ -152,12 +152,12 @@ sub _get_paged_results
             return $c->render(status => 500, openapi => { error => $_->msg });
         }
         else {
-            return $c->render( 
-                status => 500, 
+            return $c->render(
+                status => 500,
                 openapi => { error => "Something went wrong, check the logs." }
             );
         }
-    };    
+    };
 }
 
 1;

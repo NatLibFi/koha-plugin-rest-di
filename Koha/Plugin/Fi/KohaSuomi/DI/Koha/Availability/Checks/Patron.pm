@@ -124,7 +124,7 @@ sub debt_checkout_guarantees {
     my $guarantees_non_issues_charges = 0;
     while (my $g = $guarantees->next() ) {
         $guarantees_non_issues_charges += $g->account->non_issues_charges;
-    }    
+    }
 
     if ($guarantees_non_issues_charges > $max_charges) {
         return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Patron::DebtGuarantees->new(
