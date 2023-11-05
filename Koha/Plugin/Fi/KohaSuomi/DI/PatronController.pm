@@ -53,7 +53,7 @@ sub get {
             );
         }
 
-        my $ret = $patron->to_api;
+        my $ret = $patron->to_api({ user => $patron });
 
         if ($c->validation->param('query_blocks')) {
             my $patron_checks = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::Patron->new($patron);
@@ -589,7 +589,7 @@ sub validate_credentials {
         );
     }
 
-    return $c->render(status => 200, openapi => $patron->to_api);
+    return $c->render(status => 200, openapi => $patron->to_api({ user => $patron }));
 }
 
 # Takes a HASHref of parameters
