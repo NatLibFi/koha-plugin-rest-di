@@ -43,6 +43,7 @@ Get borrower
 
 sub get {
     my $c = shift->openapi->valid_input or return;
+    my $current_user = $c->stash('koha.user');
 
     return try {
         my $patron = Koha::Patrons->find($c->validation->param('patron_id'));
@@ -53,7 +54,7 @@ sub get {
             );
         }
 
-        my $ret = $patron->to_api({ user => $patron });
+        my $ret = $patron->to_api( { user => $current_user } );
 
         if ($c->validation->param('query_blocks')) {
             my $patron_checks = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Checks::Patron->new($patron);
@@ -543,6 +544,7 @@ sub list_checkouts {
 
 sub validate_credentials {
     my $c = shift->openapi->valid_input or return;
+    my $current_user = $c->stash('koha.user');
 
     my $body = $c->validation->param('body');
     my $userid = $body->{userid} || $body->{cardnumber};
@@ -588,8 +590,7 @@ sub validate_credentials {
             }
         );
     }
-
-    return $c->render(status => 200, openapi => $patron->to_api({ user => $patron }));
+    return $c->render(status => 200, openapi => $patron->to_api( { user => $current_user } ));
 }
 
 # Takes a HASHref of parameters
