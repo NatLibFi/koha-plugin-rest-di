@@ -19,6 +19,7 @@ package Koha::Plugin::Fi::KohaSuomi::DI::Koha::Item::Availability::Search;
 # along with Koha; if not, see <http://www.gnu.org/licenses>.
 
 use Modern::Perl;
+use C4::Context;
 
 use base qw(Koha::Plugin::Fi::KohaSuomi::DI::Koha::Item::Availability);
 
@@ -57,6 +58,9 @@ sub in_opac {
     }
     if (!$params->{'ignore_transfer'}) {
         $self->unavailable($reason) if $reason = $itemcalc->transfer;
+    }
+    if (C4::Context->preference('UseRecalls')) {
+        $self->unavailable($reason) if $reason = $itemcalc->recalled;
     }
 
     return $self;

@@ -567,5 +567,18 @@ sub _pickup_location_allowed {
     return $context_cache->{items_available_by_location}->{$location} ? 0 : 1;
 }
 
+=head3 recalled
+
+Returns Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::Recalled if item has been recalled.
+
+=cut
+
+sub recalled {
+    my ($self) = @_;
+
+    if ($self->item->recall) {
+        return Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::Recalled->new;
+    }
+}
 
 1;

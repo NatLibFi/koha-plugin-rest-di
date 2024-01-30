@@ -87,6 +87,10 @@ use Exception::Class (
      'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::Withdrawn' => {
         isa =>  'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item',
         description => "Item is marked as withdrawn.",
+    },
+    'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item::Recalled' => {
+        isa =>  'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Item',
+        description => "Item has been recalled.",
     }
 
 );

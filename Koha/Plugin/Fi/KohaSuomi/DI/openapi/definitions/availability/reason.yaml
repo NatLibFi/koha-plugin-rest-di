@@ -281,6 +281,10 @@ properties:
           - integer
           - "null"
     type: object
+  Item::Recalled:
+    description: Item has been recalled.
+    properties: {}
+    type: object
   Patron::AgeRestricted:
     description: An age restriction applies for this patron.
     properties:
