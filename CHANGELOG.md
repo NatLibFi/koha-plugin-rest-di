@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [23.11.03] - 2024-01-31
+
+### Added
+
+- Added support for checking recalls in item availability.
+
 ## [23.11.02] - 2024-01-01
 
 ### Fixed
