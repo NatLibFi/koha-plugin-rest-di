@@ -1,0 +1,7 @@
+---
+message_id_pp:
+  description: Internal message identifier
+  in: path
+  name: message_id
+  type: integer
+  required: true

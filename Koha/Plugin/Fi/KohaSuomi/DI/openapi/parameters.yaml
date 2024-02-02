@@ -37,6 +37,8 @@ patron_id_pp:
   $ref: parameters/patron.yaml#/patron_id_pp
 patron_id_qp:
   $ref: parameters/patron.yaml#/patron_id_qp
+message_id_pp:
+  $ref: parameters/message.yaml#/message_id_pp
 per_page:
   description: 'Page size, for paginated object listing'
   in: query

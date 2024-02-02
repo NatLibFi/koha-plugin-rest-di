@@ -151,6 +151,7 @@ sub get {
                 my $api_record;
                 $api_record->{date} = $message->message_date;
                 $api_record->{message} = $message->message;
+                $api_record->{message_id} = $message->message_id;
                 $api_record->{library_id} = $message->branchcode;
                 push @messages, $api_record;
             }
@@ -376,6 +377,54 @@ sub edit_messaging_preferences {
 List Koha::Checkout objects including renewability (for checked out items)
 <
 =cut
+
+sub delete_messages {
+    my $c = shift->openapi->valid_input or return;
+    
+    my $borrowernumber = $c->validation->param('patron_id');
+    my $message_id = $c->validation->param('message_id');
+    
+    my $patron;
+    my $message;
+
+    try {
+        $patron = Koha::Patrons->find($borrowernumber);
+        if ($patron) {
+            $message = Koha::Patron::Messages->find($message_id);
+            
+            if (($message) && ($message->message_type eq "B")){
+                if ($patron->borrowernumber == $message->borrowernumber){
+                    $message->delete;
+                    return $c->render( status => 204, openapi => {} );
+                }
+                else {
+                    return $c->render( status => 403, openapi => {
+                    error => "Borrowernumber does not match message borrowernumber"
+                    });   
+                }
+            }
+            else {
+                if ($message){
+                    return $c->render( status => 403, openapi => {
+                    error => "Forbidden message type"
+                    });    
+                }
+                else {
+                    return $c->render( status => 404, openapi => {
+                    error => "No such message for patron"
+                    });  
+                } 
+            }
+        }
+    }
+    catch {
+        unless ($patron) {
+            return $c->render( status => 404, openapi => {
+                error => "Patron doesn't exist"
+            });
+        }
+    };    
+}
 
 sub list_checkouts {
     my $c = shift->openapi->valid_input or return;

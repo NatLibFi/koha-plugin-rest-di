@@ -1161,6 +1161,44 @@ paths:
         permissions:
           borrowers: "edit_borrowers"
       x-mojo-to: Fi::KohaSuomi::DI::PatronController#edit_messaging_preferences
+  "/patrons/{patron_id}/messages/{message_id}":
+    delete:
+      description: Deletes patron's messages by message id.
+      operationId: deleteMessageDI
+      parameters:
+        - $ref: ./openapi/parameters.yaml#/patron_id_pp
+        - $ref: ./openapi/parameters.yaml#/message_id_pp
+      produces:
+        - application/json
+      responses:
+        204:
+          description: Message deleted successfully
+        401:
+          description: Authentication required
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        403:
+          description: Access forbidden
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        404:
+          description: Message or patron not found
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        500:
+          description: Internal error
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        503:
+          description: Under maintenance
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+      tags:
+        - messages
+      x-koha-authorization:
+        permissions:
+          circulate: circulate_remaining_permissions
+      x-mojo-to: Fi::KohaSuomi::DI::PatronController#delete_messages
 info:
   title: Koha REST API Discovery Interface Plugin
   version: "1"
