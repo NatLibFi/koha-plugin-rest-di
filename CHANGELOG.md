@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [23.11.05] - 2024-05-16
+
+### Fixed
+
+- Fixed the check for maximum checkouts to work properly with Koha 23.11 changes (Koha bug 32496).
+
 ## [23.11.04] - 2024-02-02
 
 ### Added
