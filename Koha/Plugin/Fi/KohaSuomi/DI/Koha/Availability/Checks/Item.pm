@@ -543,7 +543,7 @@ sub _pickup_location_allowed {
     if ( !defined $context_cache->{patron_category_library_limitation}->{$location} ) {
         my $category = Koha::Patron::Categories->find($patron->categorycode);
         if ( $category->library_limits ) {
-            if ( grep /$location/, $category->library_limits->get_column('branchcode') ) {
+            if ( grep /^$location\z/, $category->library_limits->get_column('branchcode') ) {
                 return $context_cache->{patron_category_library_limitation}->{$location} = 1;
             } else {
                 return $context_cache->{patron_category_library_limitation}->{$location} = 0;
