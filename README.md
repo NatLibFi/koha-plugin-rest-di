@@ -53,58 +53,7 @@ If you need to use the plugin without a KPZ package (e.g. to use a version clone
 1. As above, make sure the plugin system is configured and enabled.
 2. Create the path Koha/Plugin/Fi/KohaSuomi/ under the ` <pluginsdir>`
 3. Symlink the DI.pm file and DI directory to the Koha/Plugin/Fi/KohaSuomi/ directory.
-4. Add data for the plugin to Koha's MySQL database:
-
-        insert into plugin_methods (plugin_class, plugin_method) values
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'abs_path'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'api_namespace'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'api_routes'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'as_heavy'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'bundle_path'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'canonpath'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'catdir'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'catfile'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'curdir'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'decode_json'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'disable'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'enable'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'except'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'export'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'export_fail'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'export_ok_tags'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'export_tags'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'export_to_level'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'file_name_is_absolute'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'get_metadata'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'get_plugin_dir'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'get_plugin_http_path'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'get_qualified_table_name'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'get_template'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'go_home'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'import'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'is_enabled'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'max'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'mbf_dir'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'mbf_exists'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'mbf_open'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'mbf_path'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'mbf_read'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'mbf_validate'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'new'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'no_upwards'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'only'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'output'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'output_html'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'output_html_with_http_headers'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'output_with_http_headers'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'path'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'plugins'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'require_version'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'retrieve_data'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'rootdir'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'search_path'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'store_data'),
-            ('Koha::Plugin::Fi::KohaSuomi::DI', 'updir');
+4. Add data for the plugin to Koha's MySQL database by running Koha's misc/devel/install_plugins.pl script from the command line.
 
 ## Building a Release
 
