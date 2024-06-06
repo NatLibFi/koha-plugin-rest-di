@@ -538,6 +538,19 @@ Checks if pickup location is allowed. $context_cache is a hash ref used to store
 sub _pickup_location_allowed {
     my ($self, $location, $patron, $context_cache) = @_;
 
+    # Skip pickup locations if those branches are not allowed in the patron
+    # category library limitations
+    if ( !defined $context_cache->{patron_category_library_limitation}->{$location} ) {
+        my $category = Koha::Patron::Categories->find($patron->categorycode);
+        if ( $category->library_limits ) {
+            if ( grep /^$location\z/, $category->library_limits->get_column('branchcode') ) {
+                return $context_cache->{patron_category_library_limitation}->{$location} = 1;
+            } else {
+                return $context_cache->{patron_category_library_limitation}->{$location} = 0;
+            }
+        }
+    }
+
     if (!defined $context_cache->{can_place_hold_if_available_at_pickup}) {
         my $can_place = C4::Context->preference('OPACHoldsIfAvailableAtPickup');
         unless ($can_place || !$patron) {
