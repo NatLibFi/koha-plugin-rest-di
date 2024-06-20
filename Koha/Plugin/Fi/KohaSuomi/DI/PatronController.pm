@@ -22,6 +22,7 @@ use Mojo::Base 'Mojolicious::Controller';
 use C4::Auth qw( checkpw haspermission );
 
 use Koha::Biblios;
+use Koha::DateUtils qw( dt_from_string );
 use Koha::Patron::Messages;
 use Koha::Patron::Modification;
 
@@ -136,11 +137,16 @@ sub get {
         }
 
         if ($c->validation->param('query_messages')) {
+            my $msg_search_params = {
+                borrowernumber => $patron->borrowernumber,
+                message_type => 'B',
+            };
+            if ($c->validation->param('query_messages') eq 'unread') {
+                $msg_search_params->{patron_read_date} = { is => undef }
+            };
+
             my $raw_messages = Koha::Patron::Messages->search(
-                {
-                    borrowernumber => $patron->borrowernumber,
-                    message_type => 'B',
-                },
+                $msg_search_params,
                 {
                     order_by => ['message_id']
                 }
@@ -153,6 +159,7 @@ sub get {
                 $api_record->{message} = $message->message;
                 $api_record->{message_id} = $message->message_id;
                 $api_record->{library_id} = $message->branchcode;
+                $api_record->{date_read} = $message->patron_read_date;
                 push @messages, $api_record;
             }
             $ret->{messages} = \@messages;
@@ -372,59 +379,70 @@ sub edit_messaging_preferences {
     };
 }
 
-=head3 list_checkouts
-
-List Koha::Checkout objects including renewability (for checked out items)
-<
-=cut
-
-sub delete_messages {
+sub delete_message {
     my $c = shift->openapi->valid_input or return;
     
     my $borrowernumber = $c->validation->param('patron_id');
     my $message_id = $c->validation->param('message_id');
     
-    my $patron;
-    my $message;
-
-    try {
-        $patron = Koha::Patrons->find($borrowernumber);
-        if ($patron) {
-            $message = Koha::Patron::Messages->find($message_id);
-            
-            if (($message) && ($message->message_type eq "B")){
-                if ($patron->borrowernumber == $message->borrowernumber){
-                    $message->delete;
-                    return $c->render( status => 204, openapi => {} );
-                }
-                else {
-                    return $c->render( status => 403, openapi => {
-                    error => "Borrowernumber does not match message borrowernumber"
-                    });   
-                }
-            }
-            else {
-                if ($message){
-                    return $c->render( status => 403, openapi => {
-                    error => "Forbidden message type"
-                    });    
-                }
-                else {
-                    return $c->render( status => 404, openapi => {
-                    error => "No such message for patron"
-                    });  
-                } 
-            }
-        }
+    my $message = Koha::Patron::Messages->find($message_id);
+    if (!$message) {
+        return $c->render( status => 404, openapi => {
+            error => "Message not found"
+        });  
     }
-    catch {
-        unless ($patron) {
-            return $c->render( status => 404, openapi => {
-                error => "Patron doesn't exist"
-            });
-        }
-    };    
+    if ($message->message_type ne "B") {
+        return $c->render( status => 403, openapi => {
+            error => "Forbidden message type"
+        });  
+    }  
+    if ($borrowernumber != $message->borrowernumber) {
+        return $c->render( status => 403, openapi => {
+            error => "Message belongs to another patron"
+        });   
+    }
+
+    $message->delete;
+    return $c->render( status => 204, openapi => {} );
 }
+
+sub update_message {
+    my $c = shift->openapi->valid_input or return;
+    my $body = $c->req->json;
+    
+    my $borrowernumber = $c->validation->param('patron_id');
+    my $message_id = $c->validation->param('message_id');
+    
+    my $message = Koha::Patron::Messages->find($message_id);
+    if (!$message) {
+        return $c->render( status => 404, openapi => {
+            error => "Message not found"
+        });  
+    }
+    if ($message->message_type ne "B") {
+        return $c->render( status => 403, openapi => {
+            error => "Forbidden message type"
+        });  
+    }  
+    if ($borrowernumber != $message->borrowernumber) {
+        return $c->render( status => 403, openapi => {
+            error => "Message belongs to another patron"
+        });   
+    }
+
+    # We currently only allow update of patron_read_date:
+    if (exists $body->{date_read}) {
+        my $date_read = defined $body->{date_read} ? dt_from_string($body->{date_read}) : undef;
+        $message->update({ patron_read_date => $date_read });
+    }
+    return $c->render( status => 204, openapi => {} );
+}
+
+=head3 list_checkouts
+
+List Koha::Checkout objects including renewability (for checked out items)
+<
+=cut
 
 sub list_checkouts {
     my $c = shift->openapi->valid_input or return;
