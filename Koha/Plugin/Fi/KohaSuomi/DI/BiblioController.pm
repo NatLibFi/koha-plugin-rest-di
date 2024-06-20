@@ -27,7 +27,7 @@ use Koha::Subscriptions;
 
 =head1 Koha::Plugin::Fi::KohaSuomi::DI::BiblioController
 
-A class implementing the controller methods for the patron-related API
+A class implementing the controller methods for the biblio-related API
 
 =head2 Class Methods
 
