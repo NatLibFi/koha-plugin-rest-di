@@ -160,6 +160,11 @@ paths:
           name: include_found_in_hold_queue
           required: false
           type: integer
+        - description: "Whether to include suspended holds in hold queue length. 1 = yes, 0 or no parameter = no."
+          in: query
+          name: include_suspended_in_hold_queue
+          required: false
+          type: integer
       produces:
         - application/json
       responses:
@@ -215,6 +220,11 @@ paths:
         - description: "Whether to include found holds in hold queue length. 1 = yes, 0 or no parameter = no."
           in: query
           name: include_found_in_hold_queue
+          required: false
+          type: integer
+        - description: "Whether to include suspended holds in hold queue length. 1 = yes, 0 or no parameter = no."
+          in: query
+          name: include_suspended_in_hold_queue
           required: false
           type: integer
       produces:
@@ -356,6 +366,11 @@ paths:
         - description: "Whether to include found holds in hold queue length. 1 = yes, 0 or no parameter = no."
           in: query
           name: include_found_in_hold_queue
+          required: false
+          type: integer
+        - description: "Whether to include suspended holds in hold queue length. 1 = yes, 0 or no parameter = no."
+          in: query
+          name: include_suspended_in_hold_queue
           required: false
           type: integer
       produces:

@@ -42,8 +42,18 @@ GET {{baseUrl}}/contrib/kohasuomi/availability/biblios/2/hold?patron_id=57&inclu
 Authorization: Bearer {{token}}
 
 ###
+# @name hold_availability_suspended_included
+GET {{baseUrl}}/contrib/kohasuomi/availability/biblios/2/hold?patron_id=57&include_suspended_in_hold_queue=1 HTTP/1.1
+Authorization: Bearer {{token}}
+
+###
 # @name item_hold_availability
-GET {{baseUrl}}/contrib/kohasuomi/availability/items/30/hold?patron_id=57&include_found_in_hold_queue=1 HTTP/1.1
+GET {{baseUrl}}/contrib/kohasuomi/availability/items/154/hold?patron_id=57&include_found_in_hold_queue=1 HTTP/1.1
+Authorization: Bearer {{token}}
+
+###
+# @name item_hold_availability_suspended_included
+GET {{baseUrl}}/contrib/kohasuomi/availability/items/154/hold?patron_id=57&include_found_in_hold_queue=1&include_suspended_in_hold_queue=1 HTTP/1.1
 Authorization: Bearer {{token}}
 
 ###
