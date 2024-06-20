@@ -66,6 +66,27 @@ sub api_namespace {
     return 'kohasuomi';
 }
 
+# Mandatory even if does nothing
+sub install {
+    my ( $self, $args ) = @_;
+
+    return 1;
+}
+
+# Mandatory even if does nothing
+sub upgrade {
+    my ( $self, $args ) = @_;
+
+    return 1;
+}
+
+# Mandatory even if does nothing
+sub uninstall {
+    my ( $self, $args ) = @_;
+
+    return 1;
+}
+
 sub _convert_refs_to_absolute {
     my ( $self, $hashref, $path_prefix ) = @_;
 
