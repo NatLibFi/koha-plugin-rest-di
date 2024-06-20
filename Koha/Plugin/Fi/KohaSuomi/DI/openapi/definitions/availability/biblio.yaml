@@ -8,7 +8,7 @@ properties:
   item_availabilities:
     description: Availability of each item in this record
     items:
-      $ref: ./item.yaml
+      $ref: ./item_availability.yaml
     type:
       - array
       - "null"

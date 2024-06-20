@@ -95,7 +95,7 @@ paths:
               items_availability:
                 description: Availability of each item in this biblio
                 items:
-                  $ref: ./openapi/definitions.yaml#/availability~1item
+                  $ref: ./openapi/definitions.yaml#/availability~1item_availability
                 type:
                   - array
                   - "null"
@@ -262,7 +262,7 @@ paths:
         200:
           description: Article request availability information for specific item.
           schema:
-            $ref: ./openapi/definitions.yaml#/availability~1item
+            $ref: ./openapi/definitions.yaml#/availability~1item_availability
         400:
           description: Missing or invalid parameters
           schema:
@@ -309,7 +309,7 @@ paths:
         200:
           description: Checkout availability information for specific item.
           schema:
-            $ref: ./openapi/definitions.yaml#/availability~1item
+            $ref: ./openapi/definitions.yaml#/availability~1item_availability
         400:
           description: Missing or invalid parameters
           schema:
@@ -364,7 +364,7 @@ paths:
         200:
           description: Hold availability information for specific item.
           schema:
-            $ref: ./openapi/definitions.yaml#/availability~1item
+            $ref: ./openapi/definitions.yaml#/availability~1item_availability
         400:
           description: Missing or invalid parameters
           schema:

@@ -1,8 +1,8 @@
 ---
 availability/biblio:
   $ref: ./definitions/availability/biblio.yaml
-availability/item:
-  $ref: ./definitions/availability/item.yaml
+availability/item_availability:
+  $ref: ./definitions/availability/item_availability.yaml
 availability/reason:
   $ref: ./definitions/availability/reason.yaml
 error:
