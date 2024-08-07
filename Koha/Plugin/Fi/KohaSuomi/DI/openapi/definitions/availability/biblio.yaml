@@ -12,4 +12,10 @@ properties:
     type:
       - array
       - "null"
+  items_total:
+    description: Total item count
+    type: integer
+  items_checked:
+    description: Checked item count
+    type: integer
 type: object

@@ -37,6 +37,21 @@ GET {{baseUrl}}/contrib/kohasuomi/availability/biblios/2/search HTTP/1.1
 Authorization: Bearer {{token}}
 
 ###
+# @name item_statuses_limit
+GET {{baseUrl}}/contrib/kohasuomi/availability/biblios/2/search?limit=1 HTTP/1.1
+Authorization: Bearer {{token}}
+
+###
+# @name item_statuses_offset
+GET {{baseUrl}}/contrib/kohasuomi/availability/biblios/2/search?offset=1 HTTP/1.1
+Authorization: Bearer {{token}}
+
+###
+# @name item_statuses_limit_offset
+GET {{baseUrl}}/contrib/kohasuomi/availability/biblios/2/search?limit=3&offset=1 HTTP/1.1
+Authorization: Bearer {{token}}
+
+###
 # @name hold_availability
 GET {{baseUrl}}/contrib/kohasuomi/availability/biblios/2/hold?patron_id=57&include_found_in_hold_queue=0 HTTP/1.1
 Authorization: Bearer {{token}}

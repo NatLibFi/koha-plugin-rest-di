@@ -152,6 +152,8 @@ sub biblio_search {
             };
             $params->{'include_found_in_hold_queue'} = 1 if $include_found_in_hold_queue;
             $params->{'include_suspended_in_hold_queue'} = 1 if $include_suspended_in_hold_queue;
+            $params->{'limit'} = $c->validation->param('limit');
+            $params->{'offset'} = $c->validation->param('offset');
             $availability = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Availability::Search->biblio($params);
             return $c->render(status => 200, openapi => $availability->in_opac->to_api);
         }

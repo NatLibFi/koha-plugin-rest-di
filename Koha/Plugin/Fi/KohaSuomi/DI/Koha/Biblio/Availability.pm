@@ -183,6 +183,12 @@ sub to_api {
     if (defined $self->{'hold_queue_length'}) {
         $hash->{'hold_queue_length'} = 0+$self->{'hold_queue_length'};
     }
+    if (defined $self->{'items_total'}) {
+        $hash->{'items_total'} = 0+$self->{'items_total'};
+    }
+    if (defined $self->{'items_checked'}) {
+        $hash->{'items_checked'} = 0+$self->{'items_checked'};
+    }
     return $hash;
 }
 

@@ -66,6 +66,12 @@ sub new {
 
     my $self = $class->SUPER::new($params);
 
+    # Check only first n items.
+    $self->{'limit'} = $params->{'limit'};
+
+    # Check items starting at offset of n.
+    $self->{'offset'} = $params->{'offset'};
+
     return $self;
 }
 
@@ -95,36 +101,40 @@ sub _item_looper {
 
     if (scalar(@items) == 0) {
         $self->unavailable(Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Biblio::NoAvailableItems->new);
+        $self->{'items_total'} = 0;
         return;
     }
 
+    # Sort items for paging
+    sort { $a->itemnumber <=> $b->itemnumber } @items;
+ 
     my $opachiddenitems_rules = C4::Context->yaml_preference('OpacHiddenItems');
 
-    # Stop calculating item availabilities after $limit available items are found.
-    # E.g. parameter 'limit' with value 1 will find only one available item and
-    # return biblio as available if no other unavailabilities are found. If you
-    # want to calculate availability of every item in this biblio, do not give this
-    # parameter.
-    my $limit = $params->{'limit'};
     my $avoid_queries_after = $params->{'MaxSearchResultsItemsPerRecordStatusCheck'}
         ? C4::Context->preference('MaxSearchResultsItemsPerRecordStatusCheck') : undef;
     my $count = 0;
+    my $checked = 0;
 
     $self->{'hold_queue_length'} = $self->get_hold_queue_length();
 
     foreach my $item (@items) {
-        # Break out of loop after $limit items are found available
-        if (defined $limit && @{$self->{'item_availabilities'}} >= $limit) {
-            last;
-        }
-
         next if ($item->hidden_in_opac({ rules => $opachiddenitems_rules }));
+
+        $count++;
+        # Skip this item if we haven't reached the offset yet
+        next if (defined $self->offset && $count <= $self->offset);
+
+        # Skip this item if we have reached the limit. We still need to
+        # loop all items for total count of items visible in opac.
+        next if (defined $self->limit && $checked >= $self->limit);
+
+        $checked++;
 
         my $item_availability = Koha::Plugin::Fi::KohaSuomi::DI::Koha::Item::Availability::Search->new({
             item => $item,
         });
         if ($params->{'MaxSearchResultsItemsPerRecordStatusCheck'} &&
-                $count >= $avoid_queries_after) {
+            $count > $avoid_queries_after) {
             # A couple heuristics to limit how many times
             # we query the database for item transfer information, sacrificing
             # accuracy in some cases for speed;
@@ -144,7 +154,6 @@ sub _item_looper {
         } else {
             push @{$self->{'item_unavailabilities'}}, $item_availability;
         }
-        $count++;
     }
 
     # After going through items, if none are found available, set the biblio
@@ -152,6 +161,10 @@ sub _item_looper {
     if (@{$self->{'item_availabilities'}} == 0) {
         $self->unavailable(Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::Biblio::NoAvailableItems->new);
     }
+
+    # Add total and checked item count
+    $self->{'items_total'} = $count;
+    $self->{'items_checked'} = $checked;
 
     return $self;
 }

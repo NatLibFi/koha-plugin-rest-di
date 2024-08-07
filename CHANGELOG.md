@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 Anything marked with [**BC**] is known to affect backward compatibility with previous versions.
 
+## [23.11.07] - 2024-08-07
+
+### Added
+
+- Added support for paging items in biblio search availability (limit and offset query parameters). Also the total item count (items_total) and checked item count (items_checked) is now returned.
+
 ## [23.11.06] - 2024-06-20
 
 ### Added

@@ -227,6 +227,16 @@ paths:
           name: include_suspended_in_hold_queue
           required: false
           type: integer
+        - description: Check availability of first n items only. Note that this may affect the returned biblio availability as well.
+          in: query
+          name: limit
+          required: false
+          type: integer
+        - description: Offset to start checking item availability. Note that this may affect the returned biblio availability as well.
+          in: query
+          name: offset
+          required: false
+          type: integer
       produces:
         - application/json
       responses:
