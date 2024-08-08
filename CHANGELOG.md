@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 Anything marked with [**BC**] is known to affect backward compatibility with previous versions.
 
+## [23.11.08] - 2024-08-12
+
+### Fixed
+
+- Items were not always properly sorted for paging in search availability.
+
 ## [23.11.07] - 2024-08-07
 
 ### Added
