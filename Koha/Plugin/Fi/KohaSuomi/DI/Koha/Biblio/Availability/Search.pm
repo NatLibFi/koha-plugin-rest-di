@@ -106,8 +106,8 @@ sub _item_looper {
     }
 
     # Sort items for paging
-    sort { $a->itemnumber <=> $b->itemnumber } @items;
- 
+    @items = sort { $a->itemnumber <=> $b->itemnumber } @items;
+
     my $opachiddenitems_rules = C4::Context->yaml_preference('OpacHiddenItems');
 
     my $avoid_queries_after = $params->{'MaxSearchResultsItemsPerRecordStatusCheck'}
