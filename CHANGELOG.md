@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 Anything marked with [**BC**] is known to affect backward compatibility with previous versions.
 
+## [24.11.00] - 2025-03-19
+
+### Fixed
+
+- [**BC**] Fixed check for "Is Item On Hold And Found" changes in Koha 24.11 (Koha bug 17729)
+
 ## [23.11.08] - 2024-08-12
 
 ### Fixed
