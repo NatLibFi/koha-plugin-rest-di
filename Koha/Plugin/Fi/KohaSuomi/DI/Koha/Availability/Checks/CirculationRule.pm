@@ -243,7 +243,7 @@ sub on_shelf_holds_forbidden {
               || $i->notforloan > 0
               || $i->withdrawn
               || $i->onloan
-              || C4::Reserves::IsItemOnHoldAndFound( $i->id )
+              || $i->holds->filter_by_found->count
               || ( $i->damaged
                 && !C4::Context->preference('AllowHoldsOnDamagedItems') )
               || Koha::ItemTypes->find( $i->effective_itemtype() )->notforloan) {
