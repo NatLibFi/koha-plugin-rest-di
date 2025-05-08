@@ -940,6 +940,11 @@ paths:
                 type:
                   - string
                   - "null"
+              format:
+                description: delivery format for the request (e.g. SCAN or PHOTOCOPY)
+                type:
+                  - string
+                  - "null"
             type: object
       produces:
         - application/json
