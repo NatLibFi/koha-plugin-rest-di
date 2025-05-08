@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 Anything marked with [**BC**] is known to affect backward compatibility with previous versions.
 
+## [24.11.01] - 2025-05-08
+
+### Added
+
+- Delivery format can now be specified using the format field when creating an article request.
+
+### Fixed
+
+- Article requests with "Requested" status (the initial status) are now included in the article request list by default.
+- Koha now requires a valid format for an article request, so add the first one by default if the format is not included in the request.
+
 ## [24.11.00] - 2025-03-19
 
 ### Fixed
