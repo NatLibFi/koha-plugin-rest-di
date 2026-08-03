@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 Anything marked with [**BC**] is known to affect backward compatibility with previous versions.
 
+## [24.11.02] - 2026-08-03
+
+### Fixed
+
+- Fixed biblio availability checks with Koha 26.05.
+
 ## [24.11.01] - 2025-05-08
 
 ### Added
