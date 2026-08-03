@@ -303,6 +303,7 @@ sub notforloan {
     my $cached = $cache->get_from_cache('itemtype-'.$effective_itemtype);
     my $itemtype;
     if ($cached) {
+        delete $cached->{translated_description};
         $itemtype = Koha::ItemType->new->set($cached);
     } else {
         $itemtype = Koha::ItemTypes->find($effective_itemtype);
