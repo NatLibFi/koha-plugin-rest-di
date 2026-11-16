@@ -68,9 +68,10 @@ sub list {
             $filtered_params = $c->build_query_params( $filtered_params, $reserved_params );
         }
 
-        # By default display only requests that are pending or being processed
+        # By default display only requests that are requested, pending or being processed
         unless ( $filtered_params->{status} ) {
             $filtered_params->{'-or'} = [
+                { status => Koha::ArticleRequest::Status::Requested },
                 { status => Koha::ArticleRequest::Status::Pending },
                 { status => Koha::ArticleRequest::Status::Processing }
             ];
@@ -126,6 +127,12 @@ sub add {
     my $pages      = $body->{pages};
     my $chapters   = $body->{chapters};
 
+    # We set default values for format if it does not come from API request,
+    # otherwise Koha almost silently dies with Koha::Exceptions::ArticleRequest::WrongFormat
+    # (for a moment of a patch formats was SCAN|PHOTOCOPY, check the pref value below)
+    my $formats = C4::Context->multivalue_preference('ArticleRequestsSupportedFormats');
+    my $format  = $body->{format} // $formats->[0];
+
     my $patron = Koha::Patrons->find($patron_id);
 
     unless ($patron) {
@@ -172,6 +179,7 @@ sub add {
             pages          => $pages,
             chapters       => $chapters,
             patron_notes   => $notes,
+            format         => $format,
         }
     )->store();
 

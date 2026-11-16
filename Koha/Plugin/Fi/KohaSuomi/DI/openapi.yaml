@@ -95,7 +95,7 @@ paths:
               items_availability:
                 description: Availability of each item in this biblio
                 items:
-                  $ref: ./openapi/definitions.yaml#/availability~1item
+                  $ref: ./openapi/definitions.yaml#/availability~1item_availability
                 type:
                   - array
                   - "null"
@@ -160,6 +160,11 @@ paths:
           name: include_found_in_hold_queue
           required: false
           type: integer
+        - description: "Whether to include suspended holds in hold queue length. 1 = yes, 0 or no parameter = no."
+          in: query
+          name: include_suspended_in_hold_queue
+          required: false
+          type: integer
       produces:
         - application/json
       responses:
@@ -217,6 +222,21 @@ paths:
           name: include_found_in_hold_queue
           required: false
           type: integer
+        - description: "Whether to include suspended holds in hold queue length. 1 = yes, 0 or no parameter = no."
+          in: query
+          name: include_suspended_in_hold_queue
+          required: false
+          type: integer
+        - description: Check availability of first n items only. Note that this may affect the returned biblio availability as well.
+          in: query
+          name: limit
+          required: false
+          type: integer
+        - description: Offset to start checking item availability. Note that this may affect the returned biblio availability as well.
+          in: query
+          name: offset
+          required: false
+          type: integer
       produces:
         - application/json
       responses:
@@ -262,7 +282,7 @@ paths:
         200:
           description: Article request availability information for specific item.
           schema:
-            $ref: ./openapi/definitions.yaml#/availability~1item
+            $ref: ./openapi/definitions.yaml#/availability~1item_availability
         400:
           description: Missing or invalid parameters
           schema:
@@ -309,7 +329,7 @@ paths:
         200:
           description: Checkout availability information for specific item.
           schema:
-            $ref: ./openapi/definitions.yaml#/availability~1item
+            $ref: ./openapi/definitions.yaml#/availability~1item_availability
         400:
           description: Missing or invalid parameters
           schema:
@@ -358,13 +378,18 @@ paths:
           name: include_found_in_hold_queue
           required: false
           type: integer
+        - description: "Whether to include suspended holds in hold queue length. 1 = yes, 0 or no parameter = no."
+          in: query
+          name: include_suspended_in_hold_queue
+          required: false
+          type: integer
       produces:
         - application/json
       responses:
         200:
           description: Hold availability information for specific item.
           schema:
-            $ref: ./openapi/definitions.yaml#/availability~1item
+            $ref: ./openapi/definitions.yaml#/availability~1item_availability
         400:
           description: Missing or invalid parameters
           schema:
@@ -700,11 +725,16 @@ paths:
           name: query_permissions
           required: false
           type: integer
-        - description: "Return patron's messages. 1 = yes, 0 or no parameter = no."
+        - description: "Return patron's messages. 'unread' = only unread, 1 or 'all' all, 0 or no parameter = no."
           in: query
           name: query_messages
           required: false
-          type: integer
+          type: string
+          enum:
+            - "0"
+            - "1"
+            - "all"
+            - "unread"
       produces:
         - application/json
       responses:
@@ -907,6 +937,11 @@ paths:
                   - "null"
               volume:
                 description: volume information
+                type:
+                  - string
+                  - "null"
+              format:
+                description: delivery format for the request (e.g. SCAN or PHOTOCOPY)
                 type:
                   - string
                   - "null"
@@ -1198,7 +1233,44 @@ paths:
       x-koha-authorization:
         permissions:
           circulate: circulate_remaining_permissions
-      x-mojo-to: Fi::KohaSuomi::DI::PatronController#delete_messages
+      x-mojo-to: Fi::KohaSuomi::DI::PatronController#delete_message
+    put:
+      description: Update patron's messages by message id.
+      operationId: updateMessageDI
+      parameters:
+        - $ref: ./openapi/parameters.yaml#/patron_id_pp
+        - $ref: ./openapi/parameters.yaml#/message_id_pp
+      produces:
+        - application/json
+      responses:
+        204:
+          description: Message updated successfully
+        401:
+          description: Authentication required
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        403:
+          description: Access forbidden
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        404:
+          description: Message or patron not found
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        500:
+          description: Internal error
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+        503:
+          description: Under maintenance
+          schema:
+            $ref: ./openapi/definitions.yaml#/error
+      tags:
+        - messages
+      x-koha-authorization:
+        permissions:
+          circulate: circulate_remaining_permissions
+      x-mojo-to: Fi::KohaSuomi::DI::PatronController#update_message
 info:
   title: Koha REST API Discovery Interface Plugin
   version: "1"

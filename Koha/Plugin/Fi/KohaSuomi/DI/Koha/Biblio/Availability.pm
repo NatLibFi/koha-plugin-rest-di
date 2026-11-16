@@ -77,7 +77,10 @@ sub new {
 
     # Optionally include found holds in hold queue length calculation.
     $self->{'include_found_in_hold_queue'} = $params->{'include_found_in_hold_queue'};
- 
+
+    # Optionally include suspended holds in hold queue length calculation.
+    $self->{'include_suspended_in_hold_queue'} = $params->{'include_suspended_in_hold_queue'};
+
     if (exists $params->{'biblio'}) {
         unless (ref($params->{'biblio'}) eq 'Koha::Biblio') {
             Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::BadParameter->throw(
@@ -180,6 +183,12 @@ sub to_api {
     if (defined $self->{'hold_queue_length'}) {
         $hash->{'hold_queue_length'} = 0+$self->{'hold_queue_length'};
     }
+    if (defined $self->{'items_total'}) {
+        $hash->{'items_total'} = 0+$self->{'items_total'};
+    }
+    if (defined $self->{'items_checked'}) {
+        $hash->{'items_checked'} = 0+$self->{'items_checked'};
+    }
     return $hash;
 }
 
@@ -198,6 +207,9 @@ sub get_hold_queue_length
     };
     if (!$self->{'include_found_in_hold_queue'}) {
         $hold_params->{found} = undef;
+    }
+    if (!$self->{'include_suspended_in_hold_queue'}) {
+        $hold_params->{suspend} = 0;
     }
     return Koha::Holds->search($hold_params)->count;
 }

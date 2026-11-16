@@ -303,6 +303,7 @@ sub notforloan {
     my $cached = $cache->get_from_cache('itemtype-'.$effective_itemtype);
     my $itemtype;
     if ($cached) {
+        delete $cached->{translated_description};
         $itemtype = Koha::ItemType->new->set($cached);
     } else {
         $itemtype = Koha::ItemTypes->find($effective_itemtype);
@@ -542,14 +543,28 @@ sub _pickup_location_allowed {
     # category library limitations. Check the cache for every item attached to biblio.
     my $allowed = $context_cache->{patron_category_library_limitation}->{$location};
     if ( !defined $allowed ) {
-      my $category = Koha::Patron::Categories->find( $patron->categorycode );
-      my $limits   = $category->library_limits;
-      $allowed = $limits
+        my $category = Koha::Patron::Categories->find( $patron->categorycode );
+        my $limits   = $category->library_limits;
+        $allowed = $limits
 	? ( ( grep { $_ eq $location } $limits->get_column('branchcode') ) ? 1 : 0 )
 	: 1;
-      $context_cache->{patron_category_library_limitation}->{$location} = $allowed;
+        $context_cache->{patron_category_library_limitation}->{$location} = $allowed;
     }
     return 0 unless $allowed;
+
+    if (!defined $context_cache->{can_place_hold_if_available_at_pickup}) {
+        my $can_place = C4::Context->preference('OPACHoldsIfAvailableAtPickup');
+        unless ($can_place || !$patron) {
+            my @patron_categories = split ',', C4::Context->preference('OPACHoldsIfAvailableAtPickupExceptions');
+            if (@patron_categories) {
+                my $categorycode = $patron->categorycode;
+                $can_place = grep { $_ eq $categorycode } @patron_categories;
+            }
+        }
+        $context_cache->{can_place_hold_if_available_at_pickup} = $can_place;
+    }
+    return 1 if $context_cache->{can_place_hold_if_available_at_pickup};
+
 
     # Filter out pickup locations with available items
     if (!defined $context_cache->{items_available_by_location}->{$location}) {

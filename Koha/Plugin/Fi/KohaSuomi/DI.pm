@@ -26,7 +26,7 @@ our $metadata = {
     author          => 'Koha-Suomi and The National Library of Finland',
     date_authored   => '2020-06-03',
     date_updated    => '1900-01-01',
-    minimum_version => '23.06.00.054',
+    minimum_version => '24.11.00.000',
     maximum_version => undef,
     version         => $VERSION,
     description     => 'This plugin implements API endpoints required'
@@ -64,6 +64,27 @@ sub api_namespace {
     my ( $self ) = @_;
 
     return 'kohasuomi';
+}
+
+# Mandatory even if does nothing
+sub install {
+    my ( $self, $args ) = @_;
+
+    return 1;
+}
+
+# Mandatory even if does nothing
+sub upgrade {
+    my ( $self, $args ) = @_;
+
+    return 1;
+}
+
+# Mandatory even if does nothing
+sub uninstall {
+    my ( $self, $args ) = @_;
+
+    return 1;
 }
 
 sub _convert_refs_to_absolute {

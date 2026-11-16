@@ -2,6 +2,8 @@ package Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions;
 
 use Modern::Perl;
 
+use Koha::Exception;
+
 use Exception::Class (
 
     'Koha::Plugin::Fi::KohaSuomi::DI::Koha::Exceptions::BadParameter' => {
