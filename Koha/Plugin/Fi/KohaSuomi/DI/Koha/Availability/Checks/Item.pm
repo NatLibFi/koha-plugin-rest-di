@@ -540,17 +540,17 @@ sub _pickup_location_allowed {
     my ($self, $location, $patron, $context_cache) = @_;
 
     # Skip pickup locations if those branches are not allowed in the patron
-    # category library limitations
-    if ( !defined $context_cache->{patron_category_library_limitation}->{$location} ) {
-        my $category = Koha::Patron::Categories->find($patron->categorycode);
-        if ( $category->library_limits ) {
-            if ( grep /^$location\z/, $category->library_limits->get_column('branchcode') ) {
-                return $context_cache->{patron_category_library_limitation}->{$location} = 1;
-            } else {
-                return $context_cache->{patron_category_library_limitation}->{$location} = 0;
-            }
-        }
+    # category library limitations. Check the cache for every item attached to biblio.
+    my $allowed = $context_cache->{patron_category_library_limitation}->{$location};
+    if ( !defined $allowed ) {
+        my $category = Koha::Patron::Categories->find( $patron->categorycode );
+        my $limits   = $category->library_limits;
+        $allowed = $limits
+	? ( ( grep { $_ eq $location } $limits->get_column('branchcode') ) ? 1 : 0 )
+	: 1;
+        $context_cache->{patron_category_library_limitation}->{$location} = $allowed;
     }
+    return 0 unless $allowed;
 
     if (!defined $context_cache->{can_place_hold_if_available_at_pickup}) {
         my $can_place = C4::Context->preference('OPACHoldsIfAvailableAtPickup');
@@ -564,6 +564,7 @@ sub _pickup_location_allowed {
         $context_cache->{can_place_hold_if_available_at_pickup} = $can_place;
     }
     return 1 if $context_cache->{can_place_hold_if_available_at_pickup};
+
 
     # Filter out pickup locations with available items
     if (!defined $context_cache->{items_available_by_location}->{$location}) {
