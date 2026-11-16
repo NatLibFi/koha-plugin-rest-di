@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 Anything marked with [**BC**] is known to affect backward compatibility with previous versions.
 
+## [Unreleased]
+
+### Fixed
+
+- Fixed the course instructors endpoint returning an internal server error for non-empty results.
+
 ## [24.11.02] - 2026-08-03
 
 ### Fixed

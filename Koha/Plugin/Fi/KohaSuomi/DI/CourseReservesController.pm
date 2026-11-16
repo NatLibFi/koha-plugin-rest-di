@@ -146,7 +146,7 @@ sub _get_paged_results
             params => $args,
         });
 
-        return $c->render(status => 200, openapi => $results->to_api());
+        return $c->render(status => 200, openapi => $c->objects->to_api($results));
     } catch {
         if ( $_->isa('DBIx::Class::Exception') ) {
             return $c->render(status => 500, openapi => { error => $_->msg });
